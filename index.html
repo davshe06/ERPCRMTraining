@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+</head>
+<body>
+<title>ERP & CRM Spring Training</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: one 1080px column under a sticky bar. The home view pairs the pitch
+   with a ballpark line score (nine innings = nine lessons); everything else is
+   a single focused stage. Tokens follow the Recruiting Bullpen system. */
+:root {
+  --bg: #e6f2f0; --bg2: #c3ded9; --card: #ffffff; --surface: #f1f5f5;
+  --text: #1d1f20; --muted: #55595c; --line: #cfdcda;
+  --accent: #416180; --accent-soft: #d6ebff; --accent-ink: #ffffff;
+  --gold: #a96d10; --gold-soft: #fbefd6;
+  --good: #2a7550; --good-soft: #dff3e8; --bad: #b03b34; --bad-soft: #fbe4e1;
+  --board: #1d2d3d; --board-fg: #eef6ff; --board-dim: #94bce3; --board-line: #416180; --board-lit: #f3c668;
+  --shadow: 0 3px 10px rgba(43, 43, 45, .12);
+  --font-head: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r-sm: 4px; --r-lg: 7px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10181a; --bg2: #14242a; --card: #1a2528; --surface: #223034;
+    --text: #e7eef0; --muted: #a5b3b7; --line: #32444a;
+    --accent: #94bce3; --accent-soft: #2c455d; --accent-ink: #10181a;
+    --gold: #e3b25a; --gold-soft: #3b2f17;
+    --good: #6cc497; --good-soft: #1b392a; --bad: #ee8f87; --bad-soft: #43221f;
+    --board: #0b1216; --board-line: #2c455d;
+    --shadow: 0 3px 10px rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10181a; --bg2: #14242a; --card: #1a2528; --surface: #223034;
+  --text: #e7eef0; --muted: #a5b3b7; --line: #32444a;
+  --accent: #94bce3; --accent-soft: #2c455d; --accent-ink: #10181a;
+  --gold: #e3b25a; --gold-soft: #3b2f17;
+  --good: #6cc497; --good-soft: #1b392a; --bad: #ee8f87; --bad-soft: #43221f;
+  --board: #0b1216; --board-line: #2c455d;
+  --shadow: 0 3px 10px rgba(0, 0, 0, .4);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--bg) linear-gradient(180deg, var(--bg), var(--bg2)) fixed;
+  color: var(--text); font: 16px/1.55 var(--font-body);
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--board); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 600; line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.1rem, 5vw, 3.2rem); }
+h2 { font-size: 1.7rem; }
+h3 { font-size: 1.25rem; }
+p { margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.kicker { font: 600 .82rem var(--font-head); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.row.end { justify-content: flex-end; }
+.row.between { justify-content: space-between; }
+
+/* top bar */
+.top { background: var(--board); color: var(--board-fg); }
+.top-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; padding-block: 10px; }
+.brand { font: 600 1.35rem var(--font-head); letter-spacing: .04em; text-transform: uppercase; color: var(--board-fg); text-decoration: none; }
+.brand small { color: var(--board-lit); font-size: .8em; margin-left: 6px; }
+.top nav { display: flex; flex-wrap: wrap; gap: 2px; flex: 1; }
+.top nav a { color: var(--board-dim); text-decoration: none; font-weight: 500; padding: 6px 12px; border-radius: var(--r-sm); }
+.top nav a:hover { color: var(--board-fg); }
+.top nav a[aria-current] { color: var(--board); background: var(--board-lit); }
+.rank { display: flex; align-items: center; gap: 10px; font: 600 1rem var(--font-head); letter-spacing: .06em; text-transform: uppercase; }
+.rank b { color: var(--board-lit); font-variant-numeric: tabular-nums; }
+.meter { width: 90px; height: 6px; background: var(--board-line); border-radius: 3px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--board-lit); transition: width .4s; }
+@media (min-width: 760px) { .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; } }
+main { padding-block: 28px 64px; display: flex; flex-direction: column; gap: 28px; }
+
+/* controls */
+.btn { font: 500 1rem var(--font-body); padding: 10px 18px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; text-decoration: none; display: inline-block; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn.small { padding: 5px 10px; font-size: .86rem; }
+.btn:disabled { opacity: .45; cursor: default; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--shadow); min-width: 0; }
+.pill { font: 600 .8rem var(--font-head); letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; background: var(--surface); color: var(--muted); white-space: nowrap; }
+.pill.good { background: var(--good-soft); color: var(--good); }
+.pill.gold { background: var(--gold-soft); color: var(--gold); }
+.pill.accent { background: var(--accent-soft); color: var(--accent); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: .9rem; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; font-family: inherit; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tag { font-size: .84rem; padding: 2px 8px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line); }
+
+/* home */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+.hero p { font-size: 1.1rem; max-width: 34em; }
+.board { background: var(--board); color: var(--board-fg); border-radius: var(--r-lg); padding: 18px; box-shadow: var(--shadow); min-width: 0; }
+.board table { width: 100%; border-collapse: collapse; table-layout: fixed; font: 600 1.15rem var(--font-head); font-variant-numeric: tabular-nums; text-align: center; }
+.board th { color: var(--board-dim); font-size: .8rem; letter-spacing: .08em; padding-bottom: 4px; }
+.board td { border: 1px solid var(--board-line); padding: 7px 0; }
+.board td.lit { color: var(--board-lit); }
+.board td.tot { background: var(--board-line); color: var(--board-lit); }
+.board .cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; margin-top: 12px; font: 500 .95rem var(--font-head); letter-spacing: .08em; text-transform: uppercase; color: var(--board-dim); }
+.board .cap b { color: var(--board-fg); }
+.lessons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.lesson { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; text-decoration: none; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px; }
+.lesson:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.lesson .no { grid-row: span 3; font: 600 2.4rem/1 var(--font-head); color: var(--accent); min-width: 1ch; }
+.lesson p { font-size: .93rem; color: var(--muted); }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.badge { border: 1px dashed var(--line); border-radius: var(--r-lg); padding: 10px 12px; color: var(--muted); font-size: .88rem; }
+.badge b { display: block; font: 600 1.1rem var(--font-head); letter-spacing: .04em; }
+.badge.on { border: 1px solid var(--gold); background: var(--gold-soft); color: var(--text); }
+.badge.on b { color: var(--gold); }
+
+/* stage: lessons, quizzes, games */
+.stage { max-width: 760px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+.segs { display: flex; gap: 4px; }
+.segs i { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+.segs i.on { background: var(--accent); }
+.segs i.cur { background: var(--gold); }
+.slide { display: flex; flex-direction: column; gap: 14px; }
+.slide ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+.slide table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+.slide th, .slide td, .ptable th, .ptable td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.slide th, .ptable th { font: 600 .82rem var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.scroll { overflow-x: auto; }
+.say { background: var(--accent-soft); border-radius: var(--r-sm); padding: 12px 14px; }
+.say b { font: 600 .82rem var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); display: block; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { text-align: left; font: inherit; padding: 12px 14px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt.ok { background: var(--good-soft); border-color: var(--good); }
+.opt.no { background: var(--bad-soft); border-color: var(--bad); }
+.opt.dim { opacity: .55; }
+.opt:disabled { cursor: default; }
+.why { padding: 12px 14px; border-radius: var(--r-sm); background: var(--surface); }
+.why.good { background: var(--good-soft); }
+.why.bad { background: var(--bad-soft); }
+.big { font: 600 clamp(3rem, 12vw, 5rem)/1 var(--font-head); color: var(--accent); font-variant-numeric: tabular-nums; }
+.center { text-align: center; align-items: center; }
+
+/* games */
+.games { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.game { display: flex; flex-direction: column; gap: 8px; }
+.game .row { margin-top: auto; padding-top: 6px; }
+.hud { display: flex; justify-content: space-between; gap: 12px; font: 600 1.2rem var(--font-head); letter-spacing: .05em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.term { font: 600 clamp(1.8rem, 7vw, 2.8rem)/1.1 var(--font-head); text-align: center; padding: 34px 8px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.two .btn { padding: 18px 8px; font: 600 1.4rem var(--font-head); letter-spacing: .06em; }
+.match { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 8px; }
+.match .opt { font-size: .93rem; padding: 10px; }
+.match .opt.sel { border-color: var(--gold); background: var(--gold-soft); }
+.lineup { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: n; }
+.lineup li { counter-increment: n; padding: 8px 12px; border-radius: var(--r-sm); background: var(--good-soft); }
+.lineup li::before { content: counter(n) ". "; font-weight: 700; }
+.lineup li.empty { background: none; border: 1px dashed var(--line); color: var(--muted); }
+.shake { animation: shake .3s; border-color: var(--bad) !important; }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.talk { display: flex; flex-direction: column; gap: 10px; }
+.line { max-width: 88%; padding: 10px 14px; border-radius: var(--r-lg); background: var(--surface); }
+.line.you { align-self: flex-end; background: var(--accent-soft); }
+.line small { display: block; font: 600 .78rem var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.trust { display: flex; gap: 3px; align-items: center; }
+.trust i { width: 16px; height: 10px; border-radius: 2px; background: var(--line); }
+.trust i.on { background: var(--good); }
+
+/* platforms + playbook */
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.pcard { text-align: left; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+.pcard:hover, .pcard[aria-pressed="true"] { border-color: var(--accent); box-shadow: var(--shadow); }
+.pcard[aria-pressed="true"] { background: var(--accent-soft); }
+.pcard p { font-size: .9rem; color: var(--muted); }
+#pdetail { scroll-margin-top: 70px; }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.cols ul { margin: 6px 0 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; }
+.plus h3 { color: var(--good); } .minus h3 { color: var(--bad); }
+.qrow { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.qrow span { min-width: 0; }
+details { border-bottom: 1px solid var(--line); padding: 10px 0; }
+summary { cursor: pointer; font-weight: 700; }
+details p { margin-top: 8px; }
+input[type="search"] { font: inherit; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--card); color: var(--text); width: 100%; max-width: 340px; }
+dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); }
+dt, dd { margin: 0; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+dt { font-weight: 700; }
+
+#toasts { position: fixed; z-index: 20; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(68px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
+.toast { background: var(--board); color: var(--board-fg); border-left: 4px solid var(--board-lit); border-radius: var(--r-sm); padding: 10px 16px; box-shadow: var(--shadow); animation: rise .25s; }
+.toast b { display: block; font: 600 1.25rem var(--font-head); letter-spacing: .04em; color: var(--board-lit); }
+.toast small { font-size: .8rem; color: var(--board-dim); }
+@keyframes rise { from { transform: translateY(-12px); opacity: 0; } }
+footer { font-size: .85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+
+@media (max-width: 820px) {
+  .hero, .cols { grid-template-columns: minmax(0, 1fr); }
+  .lessons { grid-template-columns: minmax(0, 1fr); }
+  .card { padding: 16px; }
+  .match { grid-template-columns: minmax(0, 1fr); }
+  dl { grid-template-columns: minmax(0, 1fr); }
+  dt { border-bottom: 0; padding-bottom: 0; }
+  .rank .meter { width: 60px; }
+  .top nav { order: 3; flex-basis: 100%; }
+  .top nav a { padding: 6px 10px; }
+  .rank { margin-left: auto; }
+  #toasts { top: calc(12px + env(safe-area-inset-top, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#home">Spring Training<small>ERP &amp; CRM</small></a>
+    <nav id="nav" aria-label="Sections">
+      <a href="#home" data-n="home">Lessons</a>
+      <a href="#platforms" data-n="platforms">Platforms</a>
+      <a href="#games" data-n="games">Games</a>
+      <a href="#playbook" data-n="playbook">Playbook</a>
+    </nav>
+    <div class="rank" id="rank"></div>
+  </div>
+</header>
+<main class="wrap" id="view"></main>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+'use strict';
+
+/* ════════════════════════════ CONTENT ════════════════════════════
+   Everything a trainer might want to edit lives in this block.
+   In every quiz, the FIRST option is the correct one; they are shuffled on screen. */
+
+const LESSONS = [
+{ id: 'erp', title: 'ERP 101', sub: 'The system that runs the business', slides: [
+  { t: 'What an ERP is', b: `<p><strong>Enterprise resource planning</strong> software is the back office in one system: finance, purchasing, inventory, manufacturing and often HR, all sharing one database.</p>
+    <p>Before ERP, each department kept its own software and spreadsheets and re-typed each other's numbers. The promise of ERP is simple: enter it once, and everyone sees the same figure.</p>
+    <p>If the ERP stops, the company can't ship, invoice or pay people. That is why these projects get executive attention and real budgets.</p>` },
+  { t: 'It comes in modules', b: `<p>Companies buy the pieces they need. Each piece is a specialty, and consultants build careers inside one or two of them.</p>
+    <ul><li><strong>Financials:</strong> general ledger, payables, receivables, month-end close</li>
+    <li><strong>Procurement:</strong> requisitions, purchase orders, vendors</li>
+    <li><strong>Inventory and warehouse:</strong> stock, picking, shipping</li>
+    <li><strong>Manufacturing:</strong> bills of materials, production planning</li>
+    <li><strong>Order management:</strong> sales orders through to invoices</li>
+    <li><strong>HR and payroll</strong> (often called HCM) and <strong>projects</strong></li></ul>`,
+    say: 'Which modules are in scope?' },
+  { t: 'Where it lives', b: `<table><tr><th>Model</th><th>What it means</th></tr>
+    <tr><td><strong>On-premise</strong></td><td>Installed on the company's own servers. They control upgrades, and often put them off for years.</td></tr>
+    <tr><td><strong>Cloud (SaaS)</strong></td><td>The vendor runs it and pushes updates on a schedule. Less custom code, more standard process.</td></tr>
+    <tr><td><strong>Private cloud / hosted</strong></td><td>The company's own copy, run in someone else's data centre. A halfway house.</td></tr></table>
+    <p>The move from on-premise to cloud is the biggest reason so many ERP projects are running right now.</p>` },
+  { t: 'Why companies buy or replace one', b: `<p>Nobody replaces an ERP for fun. Something forces it. Learn to hear these:</p>
+    <ul><li>They outgrew a small-business package like QuickBooks</li>
+    <li>An acquisition left them with two or three systems</li>
+    <li>The vendor is ending support for their version</li>
+    <li>Month-end close is slow and nobody trusts the reports</li>
+    <li>A new owner, CFO or CIO wants standard systems</li></ul>`,
+    say: "What's making the current system hard to live with?" } ],
+  quiz: [
+  { q: 'What is the core promise of an ERP?', o: ['One shared system and database for the back office, so data is entered once', 'A faster website for customers', 'A tool for tracking sales leads and deals', 'Replacing the accounting team with software'], why: 'ERP puts finance, purchasing, inventory and more on one database so every team works from the same numbers.' },
+  { q: 'Which of these is NOT a typical ERP module?', o: ['Lead scoring', 'General ledger', 'Purchasing', 'Inventory'], why: 'Lead scoring ranks sales prospects. That belongs to CRM.' },
+  { q: 'A client moves from on-premise to a SaaS ERP. What changes most?', o: ['The vendor runs it and pushes updates on a schedule', 'They can no longer configure anything', 'They stop needing a finance team', 'Go-live happens automatically'], why: 'With SaaS the vendor hosts the system and ships regular releases. The client still configures it and still has to test each release.' },
+  { q: "A candidate says “I'm an SAP consultant.” What is the best next question?", o: ['Which module, and did you configure it or support it?', "What's your hourly rate?", 'Are you open to Oracle roles?', 'How fast can you start?'], why: 'ERP skills are module-specific. A finance consultant and a warehouse consultant are different hires.' } ] },
+
+{ id: 'crm', title: 'CRM 101', sub: 'The system that runs the customer', slides: [
+  { t: 'What a CRM is', b: `<p><strong>Customer relationship management</strong> software is the front office: the record of every prospect, customer, deal, conversation and support request.</p>
+    <p>ERP answers “what did we sell, ship and bill?” CRM answers “who are we talking to, and what happens next?”</p>
+    <p>You already use one. Your own ATS or CRM is the same idea pointed at clients and candidates.</p>` },
+  { t: 'Three pillars', b: `<ul><li><strong>Sales:</strong> leads, opportunities, pipeline, forecasting, territories</li>
+    <li><strong>Marketing:</strong> campaigns, email automation, lead scoring</li>
+    <li><strong>Service:</strong> cases, queues, knowledge articles, field technicians</li></ul>
+    <p>Around them sit add-ons you will hear about: <strong>CPQ</strong> (configure, price, quote), customer portals, and AI agents that answer customers or draft emails for reps.</p>` },
+  { t: 'How CRM projects differ from ERP', b: `<table><tr><th></th><th>ERP</th><th>CRM</th></tr>
+    <tr><td><strong>Timeline</strong></td><td>Many months to years</td><td>Weeks to months, then continuous change</td></tr>
+    <tr><td><strong>Big risk</strong></td><td>The business stops</td><td>Nobody uses it</td></tr>
+    <tr><td><strong>Style</strong></td><td>Planned phases, hard go-live</td><td>Iterative releases</td></tr></table>
+    <p>The classic CRM failure: reps keep working in spreadsheets, the data goes stale, and the forecast becomes fiction. That is an adoption problem, and it is solved with people.</p>` },
+  { t: 'Who buys it', b: `<p>ERP is usually sponsored by the CFO, COO or CIO. CRM has a different buyer:</p>
+    <ul><li>Chief revenue officer or VP of sales</li><li>Revenue operations or sales operations</li><li>Marketing operations</li><li>Head of customer service</li></ul>
+    <p>That gives you a second door into the same account.</p>`,
+    say: 'How much of the forecast call do you trust?' } ],
+  quiz: [
+  { q: 'CRM is the system of record for…', o: ['Every interaction with prospects and customers', 'Vendor invoices and payments', 'Factory production schedules', 'Employee payroll'], why: 'CRM holds leads, contacts, deals, activities and service cases.' },
+  { q: 'What is the biggest risk in a CRM project?', o: ["People don't adopt it, so the data and forecast can't be trusted", "The warehouse can't ship", 'Payroll fails', "The general ledger won't balance"], why: 'A CRM only works if people use it. Adoption is the make-or-break.' },
+  { q: 'Which leader most often sponsors a CRM project?', o: ['Chief revenue officer or VP of sales', 'Controller', 'Plant manager', 'Head of procurement'], why: 'CRM is bought by the revenue side: sales, marketing and service leaders.' },
+  { q: 'Case queues, knowledge articles and field technicians belong to which CRM pillar?', o: ['Service', 'Sales', 'Marketing', 'Finance'], why: 'Those are customer service functions.' } ] },
+
+{ id: 'connect', title: 'How They Connect', sub: 'Lead to cash, and everything in between', slides: [
+  { t: 'Lead to cash', b: `<p>One customer journey crosses both systems:</p>
+    <table><tr><th>In the CRM</th><th>In the ERP</th></tr>
+    <tr><td>Lead → Opportunity → Quote</td><td>Sales order → Shipment → Invoice → Cash</td></tr></table>
+    <p>The handoff happens when a won quote becomes a sales order. If that handoff is manual, someone is re-typing orders, and errors follow. Automating it is an <strong>integration</strong> project.</p>` },
+  { t: 'Who owns which data', b: `<ul><li><strong>CRM owns:</strong> prospects, contacts, pipeline, activities, service history</li>
+    <li><strong>ERP owns:</strong> billing accounts, items, prices, inventory, invoices, payments</li></ul>
+    <p>The fights happen in the overlap. Is the customer's address the one sales typed in, or the one finance invoices? Deciding which system is the master for each record is called <strong>master data</strong> management, and it needs analysts.</p>` },
+  { t: 'The neighbours', b: `<p>ERP and CRM sit in a crowd. You don't need to know these deeply, only to recognise them:</p>
+    <ul><li><strong>HCM:</strong> HR and payroll (Workday, SuccessFactors, UKG)</li>
+    <li><strong>EPM:</strong> budgeting and planning (Anaplan, Adaptive, Oracle EPM)</li>
+    <li><strong>BI:</strong> reporting and dashboards (Power BI, Tableau)</li>
+    <li><strong>WMS and e-commerce:</strong> warehouses and web stores</li>
+    <li><strong>iPaaS:</strong> the plumbing that connects them all (MuleSoft, Boomi, Workato)</li></ul>` },
+  { t: 'Why this matters to you', b: `<p>Every ERP or CRM project drags three kinds of work along with it: <strong>integrations</strong>, <strong>data</strong> and <strong>reporting</strong>. Clients often forget to staff them until late.</p>
+    <p>One question surfaces all three.</p>`,
+    say: 'What does the new system need to talk to?' } ],
+  quiz: [
+  { q: 'In lead-to-cash, where does the handoff from CRM to ERP usually happen?', o: ['When a won quote becomes a sales order', 'When a lead is created', 'When cash is received', 'When a marketing email goes out'], why: 'Selling happens in CRM. Fulfilling and billing the order happens in ERP.' },
+  { q: 'Which system usually owns invoices and payments?', o: ['ERP', 'CRM', 'Marketing automation', 'The company intranet'], why: 'Invoicing and cash are financial transactions, so they live in the ERP.' },
+  { q: 'What does an iPaaS such as MuleSoft or Boomi do?', o: ['Connects systems so data flows between them', 'Runs payroll', 'Scores leads', 'Stores contracts'], why: 'iPaaS is integration software. People who know it are needed on almost every project.' },
+  { q: 'A client is implementing a new CRM. Which question uncovers extra staffing needs?', o: ['What does it need to talk to?', 'What colour is the logo?', 'How many monitors do reps have?', 'Who was the vendor’s sales rep?'], why: 'Integrations, data and reporting work are often under-staffed.' } ] },
+
+{ id: 'erpfield', title: 'ERP Field Guide', sub: 'The main platforms and who buys them', slides: [
+  { t: 'Think in tiers', b: `<table><tr><th>Tier</th><th>Typical customer</th><th>Platforms</th></tr>
+    <tr><td><strong>Enterprise</strong></td><td>Large, global, complex</td><td>SAP S/4HANA, Oracle Fusion Cloud ERP, Dynamics 365 Finance &amp; Supply Chain, Workday</td></tr>
+    <tr><td><strong>Midmarket</strong></td><td>Growing, a few entities</td><td>NetSuite, Dynamics 365 Business Central, Infor, Epicor, Sage Intacct, Acumatica</td></tr>
+    <tr><td><strong>Small business</strong></td><td>One entity, simple needs</td><td>QuickBooks, Xero</td></tr></table>
+    <p>Bigger tier means longer projects, bigger teams and more specialised roles.</p>` },
+  { t: 'SAP and Oracle', b: `<p><strong>SAP S/4HANA</strong> is the heavyweight for manufacturers and global companies. It is deep, powerful and expensive. Its older version, ECC, loses mainstream maintenance at the end of 2027, which is driving a wave of moves to S/4HANA.</p>
+    <p><strong>Oracle</strong> is really several products. <strong>Fusion Cloud ERP</strong> is the modern cloud suite. <strong>E-Business Suite, PeopleSoft and JD Edwards</strong> are older systems still running at thousands of companies. <strong>NetSuite</strong>, also owned by Oracle, is a separate midmarket cloud ERP.</p>` },
+  { t: 'Microsoft and Workday', b: `<p><strong>Microsoft Dynamics 365</strong> is a family. <em>Finance &amp; Supply Chain</em> is the enterprise ERP (it grew out of Dynamics AX). <em>Business Central</em> is the midmarket ERP (it grew out of NAV, and is where Dynamics GP customers are being steered).</p>
+    <p><strong>Workday</strong> is cloud-only HR and finance. It is strongest in people-heavy organisations: tech, healthcare, universities, financial services. It is not built for factories.</p>` },
+  { t: 'Same name, different product', b: `<p>The quickest way to lose credibility is to treat a vendor name as one product.</p>
+    <ul><li>“Dynamics” could be an enterprise ERP, a midmarket ERP or a CRM</li>
+    <li>“Oracle” could be Fusion, EBS, PeopleSoft, JD Edwards or NetSuite</li>
+    <li>“Infor” could be M3, LN, SyteLine or Lawson</li></ul>
+    <p>Skills rarely transfer cleanly between them. The Platforms tab has a report on each one.</p>`,
+    say: 'Which product and version, exactly?' } ],
+  quiz: [
+  { q: 'Which pair is generally considered enterprise tier for the largest companies?', o: ['SAP S/4HANA and Oracle Fusion Cloud ERP', 'Sage Intacct and Acumatica', 'QuickBooks and Xero', 'Epicor Kinetic and Zoho'], why: 'SAP and Oracle dominate the largest, most complex organisations.' },
+  { q: 'A fast-growing 300-person software company has outgrown QuickBooks. Which is a common next step?', o: ['Oracle NetSuite', 'SAP S/4HANA private cloud', 'Oracle E-Business Suite', 'Siebel'], why: 'NetSuite is a popular first “real” ERP for growing midsize companies.' },
+  { q: 'Workday is strongest in…', o: ['HR and finance for service-based organisations', 'Shop-floor manufacturing', 'Warehouse automation', 'E-commerce storefronts'], why: 'Workday focuses on HCM and financials and is not designed for heavy manufacturing.' },
+  { q: 'A client says “we run Dynamics.” What do you ask?', o: ['Which one: Finance & Supply Chain, Business Central, or the CRM apps?', 'Nothing. Dynamics is one product', 'When are you moving to SAP?', 'Do you need ABAP developers?'], why: 'Dynamics 365 is a family of separate products with different skills.' } ] },
+
+{ id: 'crmfield', title: 'CRM Field Guide', sub: 'Salesforce and the rest of the lineup', slides: [
+  { t: 'Salesforce', b: `<p>The market leader, and the one you will staff most. It is sold as “clouds”: <strong>Sales Cloud, Service Cloud, Marketing Cloud, Experience Cloud</strong>, plus data and AI products.</p>
+    <p>Its strength is that it can be shaped into almost anything. Its weakness is the same thing: companies over-customise it until every change is slow and risky. That is called <strong>technical debt</strong>.</p>
+    <p>The career ladder is clear: administrator, business analyst, developer, architect. Certifications carry real weight.</p>` },
+  { t: 'Microsoft and HubSpot', b: `<p><strong>Dynamics 365 Sales and Customer Service</strong> win where a company already lives in Outlook, Teams and Power BI. Much of the building is done with the low-code <strong>Power Platform</strong>.</p>
+    <p><strong>HubSpot</strong> wins with small and midsize companies. It is quick to set up, easy to use and very strong in marketing. Costs climb as contact lists and feature tiers grow, and it has less depth for complicated enterprise selling.</p>` },
+  { t: 'The suite CRMs and the rest', b: `<ul><li><strong>SAP Sales and Service Cloud:</strong> chosen mostly by companies already running SAP ERP</li>
+    <li><strong>Oracle CX and Siebel:</strong> Siebel is an older giant still embedded in telecoms, banks and insurers</li>
+    <li><strong>Zoho, Pipedrive:</strong> low-cost options for small teams</li>
+    <li><strong>ServiceNow:</strong> known for IT service, now pushing into customer service</li></ul>` },
+  { t: 'How the choice gets made', b: `<p>Four things decide most CRM selections:</p>
+    <ul><li><strong>Size and complexity:</strong> simple selling favours HubSpot, complex favours Salesforce</li>
+    <li><strong>Existing stack:</strong> Microsoft shops lean Dynamics, SAP shops consider SAP</li>
+    <li><strong>Budget:</strong> licences are only part of it, people cost more</li>
+    <li><strong>Talent:</strong> can they hire and keep people who know it?</li></ul>
+    <p>That last one is your territory.</p>`,
+    say: 'Who looks after the CRM day to day?' } ],
+  quiz: [
+  { q: 'Which CRM is the market leader with the largest talent ecosystem?', o: ['Salesforce', 'HubSpot', 'Zoho', 'Siebel'], why: 'Salesforce leads the market and has the biggest community of certified people.' },
+  { q: 'HubSpot is typically the best fit for…', o: ['Small and midsize companies that want fast setup and strong marketing tools', 'Global banks with complex compliance needs', 'Manufacturers needing shop-floor control', 'Companies that want on-premise only'], why: 'HubSpot trades depth for ease of use, which suits smaller teams.' },
+  { q: 'A company deep in the Microsoft stack is most likely to consider which CRM?', o: ['Dynamics 365 Sales', 'SAP Sales Cloud', 'Oracle Siebel', 'Pipedrive'], why: 'Dynamics 365 plugs into Outlook, Teams and Power BI.' },
+  { q: 'What is the common downside of a heavily customised Salesforce org?', o: ['Technical debt: every change gets slower and riskier', 'It stops receiving releases', 'Licences become free', 'It can no longer store contacts'], why: 'Years of custom code and automation pile up and make change hard.' } ] },
+
+{ id: 'implement', title: 'Anatomy of an Implementation', sub: 'Phases, people and where it goes wrong', slides: [
+  { t: 'The phases', b: `<table><tr><th>Phase</th><th>What happens</th></tr>
+    <tr><td><strong>Select and plan</strong></td><td>Requirements, demos, choosing software and a partner</td></tr>
+    <tr><td><strong>Design</strong></td><td>Fit-to-standard workshops, list of gaps</td></tr>
+    <tr><td><strong>Build</strong></td><td>Configuration, custom code, integrations, reports</td></tr>
+    <tr><td><strong>Data migration</strong></td><td>Clean, map and load data from the old system</td></tr>
+    <tr><td><strong>Test</strong></td><td>System testing, then user acceptance testing (UAT)</td></tr>
+    <tr><td><strong>Train and cut over</strong></td><td>Train users, rehearse the switch, go live</td></tr>
+    <tr><td><strong>Hypercare</strong></td><td>Extra support for the first weeks</td></tr></table>` },
+  { t: 'Who is in the room', b: `<ul><li><strong>The vendor</strong> sells the licences</li>
+    <li><strong>The systems integrator (SI)</strong> is the consulting firm that does the implementation</li>
+    <li><strong>The client team:</strong> a sponsor, a project manager, and subject-matter experts borrowed from their day jobs</li></ul>
+    <p>The SI staffs its own side. The client's side is where you come in: a project manager who answers to the client, backfill for the borrowed experts, testers, trainers, data analysts, and support after the SI leaves.</p>` },
+  { t: 'Roles change with the phase', b: `<p>Demand moves through a project like a wave:</p>
+    <ul><li><strong>Early:</strong> project manager, business analyst, solution architect</li>
+    <li><strong>Middle:</strong> functional consultants, developers, data migration, integration</li>
+    <li><strong>Late:</strong> test lead and testers, trainers, change management, cutover support</li>
+    <li><strong>After:</strong> administrator, support analyst, developer for the backlog</li></ul>
+    <p>If you know the phase, you know what they need next, often before they do.</p>`,
+    say: 'Which phase are you in, and when is go-live?' },
+  { t: 'Why projects go wrong', b: `<p>The same five causes come up again and again. Each one is a staffing conversation.</p>
+    <ul><li><strong>Stretched client team:</strong> experts doing two jobs. <em>Backfill.</em></li>
+    <li><strong>Dirty data:</strong> found too late. <em>Data analysts.</em></li>
+    <li><strong>Scope creep:</strong> nobody guarding the plan. <em>Client-side PM.</em></li>
+    <li><strong>Too much custom code:</strong> “make it work like the old one.” <em>Strong functional lead.</em></li>
+    <li><strong>Users not ready:</strong> training treated as an afterthought. <em>Change lead and trainers.</em></li></ul>` } ],
+  quiz: [
+  { q: 'What happens in fit-to-standard workshops?', o: ["The business maps its processes onto the software's standard ones and lists the gaps", 'Developers write custom code', 'Users are trained on the final system', 'Old data is deleted'], why: 'Design workshops compare how the business works with how the software works out of the box.' },
+  { q: 'Who confirms in UAT that the system works for real jobs?', o: ['Business users', "The software vendor's sales team", 'Only the developers', 'External auditors'], why: 'UAT stands for user acceptance testing. The people who will use it sign it off.' },
+  { q: "The client's best accountants are in workshops three days a week. What is the staffing need?", o: ['Backfill for their day jobs', 'More ABAP developers', 'A new CFO', "Nothing. They'll catch up at night"], why: 'Backfill keeps the business running while its experts design the new system.' },
+  { q: 'What is hypercare?', o: ['Extra support in the weeks right after go-live', "The vendor's premium licence tier", 'A type of data migration', 'Final contract negotiation'], why: 'Hypercare is the period of heightened support straight after the switch.' } ] },
+
+{ id: 'upgrade', title: 'Upgrades and Migrations', sub: 'Deadlines that create demand', slides: [
+  { t: 'Three flavours of change', b: `<table><tr><th>Type</th><th>What it is</th><th>Effort</th></tr>
+    <tr><td><strong>Upgrade</strong></td><td>Same product, newer version</td><td>Mostly technical: fix custom code, retest</td></tr>
+    <tr><td><strong>Migration</strong></td><td>Move to the vendor's newer product or to the cloud</td><td>Technical plus data and retraining</td></tr>
+    <tr><td><strong>Re-implementation</strong></td><td>Start fresh, redesign processes, maybe switch vendor</td><td>A full project</td></tr></table>
+    <p>In SAP language, converting the existing system is <strong>brownfield</strong> and starting fresh is <strong>greenfield</strong>.</p>` },
+  { t: 'Deadlines to know', b: `<ul><li><strong>SAP ECC → S/4HANA:</strong> mainstream maintenance for ECC ends in 2027, with paid extensions to 2030</li>
+    <li><strong>Dynamics GP → Business Central:</strong> Microsoft ends GP support in 2029</li>
+    <li><strong>Dynamics AX → Dynamics 365 Finance &amp; Supply Chain</strong></li>
+    <li><strong>Oracle EBS and PeopleSoft → Fusion Cloud:</strong> still supported, so this one is a choice</li>
+    <li><strong>Salesforce:</strong> Classic to Lightning, and legacy CPQ to Revenue Cloud</li></ul>
+    <p>Vendors move these dates. Check the vendor's site before you quote one to a client.</p>`,
+    say: 'Which version are you on, and when does support end?' },
+  { t: 'Cloud never stops', b: `<p>On-premise customers upgraded every few years. Cloud customers get releases whether they want them or not:</p>
+    <ul><li>Salesforce: three a year</li><li>Workday and NetSuite: two a year</li><li>Oracle Fusion: quarterly</li></ul>
+    <p>Each release has to be reviewed, regression tested and explained to users. So go-live is where steady demand begins: administrators, testers, release managers and analysts.</p>` },
+  { t: 'What it means for the req', b: `<ul><li><strong>Technical upgrade:</strong> developers who can fix custom code, testers, a technical lead</li>
+    <li><strong>Migration:</strong> all of that plus data migration and trainers</li>
+    <li><strong>Re-implementation:</strong> the full cast from the last inning</li></ul>
+    <p>One question tells you which list you are working from.</p>`,
+    say: 'Is this a technical upgrade, or are you redesigning how you work?' } ],
+  quiz: [
+  { q: 'Mainstream maintenance for SAP ECC ends in…', o: ['2027', '2035', '2021', 'It never ends'], why: 'End of 2027, with optional paid extended maintenance to 2030.' },
+  { q: 'A company keeps its data and customisations and converts its existing SAP system to S/4HANA. That is…', o: ['Brownfield', 'Greenfield', 'Hypercare', 'Fit-gap'], why: 'Brownfield converts what exists. Greenfield starts fresh.' },
+  { q: 'Why do cloud platforms create steady work after go-live?', o: ['Vendors ship releases several times a year that must be tested and adopted', 'Cloud systems need daily reinstalling', 'Licences expire monthly', 'Data must be re-migrated each quarter'], why: 'Every release needs review, regression testing and user communication.' },
+  { q: 'Where is a Dynamics GP customer most often headed?', o: ['Dynamics 365 Business Central', 'Salesforce Sales Cloud', 'SAP ECC', 'Workday HCM'], why: 'Business Central is Microsoft’s recommended path for GP customers.' } ] },
+
+{ id: 'roles', title: 'Roles Decoded', sub: 'Reading a résumé without bluffing', slides: [
+  { t: 'Functional, technical, or both', b: `<ul><li><strong>Functional:</strong> knows the business process and sets up the system to match. No coding. Often a former accountant, buyer or sales ops person.</li>
+    <li><strong>Technical:</strong> writes code, builds integrations and reports.</li>
+    <li><strong>Techno-functional:</strong> does both. Rare and well paid.</li></ul>
+    <p>Mixing these up is the most common mis-submittal in this market.</p>`,
+    say: 'Did you configure it, code it, or both?' },
+  { t: 'The project cast', b: `<table><tr><th>Role</th><th>In one line</th></tr>
+    <tr><td>Project manager</td><td>Owns plan, budget, risks</td></tr>
+    <tr><td>Solution architect</td><td>Designs how it all fits together</td></tr>
+    <tr><td>Business analyst</td><td>Turns what users need into requirements</td></tr>
+    <tr><td>Functional consultant</td><td>Configures a module</td></tr>
+    <tr><td>Developer</td><td>Builds what configuration can't do</td></tr>
+    <tr><td>Data migration lead</td><td>Gets old data into the new system, clean</td></tr>
+    <tr><td>Test lead</td><td>Plans and runs testing</td></tr>
+    <tr><td>Change lead / trainer</td><td>Gets people ready and willing</td></tr>
+    <tr><td>Administrator</td><td>Runs it day to day after go-live</td></tr></table>` },
+  { t: 'Five things to pull from any résumé', b: `<ul><li><strong>Platform and version:</strong> S/4HANA or ECC? Fusion or EBS?</li>
+    <li><strong>Module or cloud:</strong> finance, supply chain, Sales Cloud, Service Cloud</li>
+    <li><strong>Role type:</strong> functional, technical or both</li>
+    <li><strong>Life cycles:</strong> how many projects from design through go-live</li>
+    <li><strong>Side of the table:</strong> consulting firm, client project team, or end user</li></ul>
+    <p>A skilled end user is valuable, but is not yet an implementation consultant. Position them honestly.</p>` },
+  { t: 'The technical vocabulary', b: `<table><tr><th>Platform</th><th>Words that mean “technical”</th></tr>
+    <tr><td>SAP</td><td>ABAP, Fiori, Basis, BTP</td></tr>
+    <tr><td>Oracle</td><td>PL/SQL, OIC, BI Publisher</td></tr>
+    <tr><td>Dynamics 365</td><td>X++, AL, Power Platform, C# plugins</td></tr>
+    <tr><td>NetSuite</td><td>SuiteScript, SuiteFlow</td></tr>
+    <tr><td>Workday</td><td>Studio, EIB, Extend</td></tr>
+    <tr><td>Salesforce</td><td>Apex, Lightning Web Components, Flow</td></tr></table>
+    <p>You don't need to know what they do. You need to know which platform they belong to.</p>` } ],
+  quiz: [
+  { q: 'A functional consultant mainly…', o: ['Understands the business process and configures the system to fit', 'Writes custom code', 'Manages servers', 'Sells licences'], why: 'Functional people configure. Technical people code.' },
+  { q: 'Apex and Lightning Web Components point to which platform?', o: ['Salesforce', 'SAP', 'NetSuite', 'Workday'], why: 'Both are Salesforce development technologies.' },
+  { q: '“Three full life-cycle implementations” means the candidate…', o: ['Worked from design through go-live three times', 'Used the system for three years', 'Holds three certifications', 'Managed three people'], why: 'A full life cycle runs from design to go-live and support.' },
+  { q: 'A candidate was a power user of NetSuite in an accounting job. How do you position them?', o: ['Strong end-user or administrator potential, not yet an implementation consultant', 'Senior implementation consultant', 'SuiteScript developer', 'Solution architect'], why: 'Using a system daily is different from implementing it for others.' } ] },
+
+{ id: 'consult', title: 'The Consultative Conversation', sub: 'From order-taker to adviser', slides: [
+  { t: 'Order-taker or adviser', b: `<p>An order-taker hears “we're looking at a new ERP” and says “I have great consultants, want résumés?”</p>
+    <p>An adviser asks about the business first. They find the need the client hasn't written a req for yet, and they are the first call when the req exists.</p>
+    <p>You now know enough to ask good questions. You do not need to know enough to answer them. Curiosity beats expertise.</p>` },
+  { t: 'A five-step discovery', b: `<table><tr><th>Step</th><th>You ask</th></tr>
+    <tr><td><strong>Situation</strong></td><td>What are you running, and which phase are you in?</td></tr>
+    <tr><td><strong>Driver</strong></td><td>What's driving the timing?</td></tr>
+    <tr><td><strong>Risk</strong></td><td>What worries you most about it?</td></tr>
+    <tr><td><strong>Gap</strong></td><td>Who is covering that today?</td></tr>
+    <tr><td><strong>Next step</strong></td><td>Can I bring you a one-page plan on Thursday?</td></tr></table>
+    <p>Offer people only after the gap is on the table, and always leave with a specific next step.</p>` },
+  { t: 'Same rules with candidates', b: `<ul><li>Ask them to walk through their last project and their part in it</li>
+    <li>Pin down module, role type, life cycles and side of the table</li>
+    <li>Ask what they want more of and less of next</li>
+    <li>Never bluff. If you don't know a term, ask them to explain it</li></ul>
+    <p>Good consultants respect a recruiter who asks precise questions. They have met plenty who didn't.</p>`,
+    say: "Explain that to me like I'm a new hire on your team." },
+  { t: 'Three objections you will hear', b: `<ul><li><strong>“Our partner handles staffing.”</strong> They staff their side. Who covers yours?</li>
+    <li><strong>“We'll use our own people.”</strong> Good, they know the business. Who does their day job meanwhile?</li>
+    <li><strong>“It's too early.”</strong> The scarce roles take longest to find. Let's map them against your timeline now.</li></ul>
+    <p>The Playbook tab has the full list, and the Client Call game lets you practise.</p>` } ],
+  quiz: [
+  { q: 'A client mentions they are “looking at a new ERP.” What is the best first move?', o: ["Ask what's driving it and where they are in the process", 'Send five consultant résumés', 'Quote your rates', 'Recommend SAP'], why: 'Understand the situation and the driver before you offer anything.' },
+  { q: '“Our partner handles all the staffing.” Best response?', o: ['They staff their side. Who covers yours: backfill, testing, a client-side PM?', 'Partners are overpriced, use us instead', 'OK, call me if that changes', "We're cheaper than any partner"], why: 'The client side of the project is usually under-staffed, and it is not the partner’s job to fill it.' },
+  { q: "You don't recognise a term the candidate uses. You should…", o: ["Ask them to explain it like you're a new hire", 'Nod and move on', "Pretend you've placed many of those", 'End the call'], why: 'Asking builds credibility. Bluffing destroys it.' },
+  { q: 'What is the order of a good discovery conversation?', o: ['Situation, driver, risk, gap, next step', 'Pitch, price, résumés, close', 'Rates, start date, paperwork', 'Small talk, pitch, follow-up email'], why: 'Find the gap before you offer to fill it.' } ] }
+];
+
+const PLATFORMS = [
+{ id: 'sap', type: 'ERP', tier: 'Enterprise', name: 'SAP S/4HANA', vendor: 'SAP', blurb: 'The heavyweight for global, complex companies.',
+  fit: 'Large manufacturers, consumer goods, pharma, energy, retail.',
+  pros: ['Deepest functionality and industry coverage on the market', 'Real-time reporting on the in-memory HANA database', 'Huge partner network and talent pool'],
+  cons: ['Long, expensive implementations', 'Every module needs its own specialists', 'Years of custom code in old ECC systems make the move hard'],
+  path: 'ECC 6.0 → S/4HANA. ECC mainstream maintenance ends in 2027 (paid extensions to 2030). Sold as RISE (private cloud) or GROW (public cloud). You may also hear “SAP Cloud ERP”.',
+  listen: ['FICO', 'MM', 'SD', 'PP', 'EWM', 'ABAP', 'Fiori', 'Basis', 'BTP', 'SuccessFactors', 'Ariba'],
+  angle: 'The 2027 deadline is the largest demand wave in ERP. Always ask which module. A FICO consultant and an EWM consultant are different people.' },
+{ id: 'fusion', type: 'ERP', tier: 'Enterprise', name: 'Oracle Fusion Cloud ERP', vendor: 'Oracle', blurb: "Oracle's modern cloud suite, strongest in finance.",
+  fit: 'Large enterprises in services, healthcare, public sector, financial services.',
+  pros: ['Broad suite: ERP, HCM, supply chain and planning on one cloud', 'Very strong financials and planning (EPM)', 'New features arrive every quarter'],
+  cons: ['Quarterly updates mean constant regression testing', 'Less room to customise than the old on-premise products', 'Complicated licensing'],
+  path: 'E-Business Suite, PeopleSoft and JD Edwards → Fusion. Oracle still supports the older products for years, so moving is a choice.',
+  listen: ['Fusion Financials', 'EPM', 'OIC', 'OTBI', 'BI Publisher', 'PL/SQL', 'HCM Cloud', 'EBS R12'],
+  angle: 'EBS or PeopleSoft experience does not equal Fusion experience. Ask “cloud or on-premise?” early.' },
+{ id: 'netsuite', type: 'ERP', tier: 'Midmarket', name: 'Oracle NetSuite', vendor: 'Oracle', blurb: 'The born-in-the-cloud ERP growing companies graduate to.',
+  fit: 'Fast-growing midsize companies: software, services, wholesale, private-equity backed.',
+  pros: ['Cloud from day one, every customer on the same version', 'Faster to implement than enterprise suites', 'Handles multiple subsidiaries and currencies well'],
+  cons: ['Can be outgrown by complex manufacturing', 'Cost climbs as modules and users are added', 'Real customisation needs SuiteScript developers'],
+  path: 'QuickBooks, Sage or Dynamics GP → NetSuite. Two releases a year.',
+  listen: ['SuiteScript', 'SuiteFlow', 'SuiteAnalytics', 'OneWorld', 'ARM', 'Saved searches', 'Celigo'],
+  angle: 'Most customers need a NetSuite administrator after go-live. Good for both contract and permanent. Ask: administrator, functional consultant or developer?' },
+{ id: 'd365fo', type: 'ERP', tier: 'Enterprise', name: 'Dynamics 365 Finance & Supply Chain', vendor: 'Microsoft', blurb: "Microsoft's enterprise ERP, still often called F&O.",
+  fit: 'Microsoft-centric manufacturers, distributors and retailers.',
+  pros: ['Fits the Microsoft stack: Azure, Power BI, Office, Power Platform', 'Familiar look and feel helps adoption', 'Good value against SAP and Oracle'],
+  cons: ['Partner quality varies a lot', 'Smaller talent pool than SAP', 'Frequent updates to keep up with'],
+  path: 'Dynamics AX 2009 / 2012 → Dynamics 365 Finance & Supply Chain.',
+  listen: ['X++', 'F&O', 'AX 2012', 'LCS', 'Dataverse', 'Dual-write', 'Azure DevOps', 'Power Platform'],
+  angle: 'AX experience mostly transfers. Ask which AX version and whether they have worked on the cloud product.' },
+{ id: 'bc', type: 'ERP', tier: 'Midmarket', name: 'Dynamics 365 Business Central', vendor: 'Microsoft', blurb: "Microsoft's ERP for small and midsize companies.",
+  fit: 'Roughly 10 to 500 employees: distribution, light manufacturing, services.',
+  pros: ['Affordable, with tight Microsoft 365 integration', 'Large marketplace of add-ons', 'Quick to get running'],
+  cons: ['Outgrown by large global operations', 'Leans on add-ons for industry depth', 'Sold and implemented by partners of mixed quality'],
+  path: 'Dynamics NAV and Dynamics GP → Business Central. Microsoft ends GP support in 2029, so a migration wave is under way.',
+  listen: ['AL', 'C/AL', 'NAV', 'Navision', 'Extensions', 'AppSource', 'GP', 'Great Plains'],
+  angle: 'The GP installed base in the US midmarket is big. “What’s your plan for GP?” opens doors.' },
+{ id: 'workday', type: 'ERP', tier: 'Enterprise', name: 'Workday', vendor: 'Workday', blurb: 'Cloud-only HR and finance for people-heavy organisations.',
+  fit: 'Technology, healthcare, higher education, financial and professional services.',
+  pros: ['Widely liked HR and payroll experience', 'One version for every customer', 'Strong reporting across HR and finance'],
+  cons: ['Not built for manufacturing or heavy supply chain', 'Premium price', 'Talent is scarce and certification has been tied to partners'],
+  path: 'PeopleSoft, Lawson or ADP → Workday. Two major releases a year.',
+  listen: ['HCM', 'Financials', 'Adaptive Planning', 'Studio', 'EIB', 'Extend', 'Prism', 'Calculated fields', 'Security configuration'],
+  angle: 'Scarcity means premium rates. Ask which area: compensation, benefits, payroll, absence, recruiting, financials or integrations.' },
+{ id: 'infor', type: 'ERP', tier: 'Midmarket', name: 'Infor CloudSuite', vendor: 'Infor', blurb: 'Industry-specific suites with the detail built in.',
+  fit: 'Manufacturing, distribution, healthcare, hospitality.',
+  pros: ['Industry functionality out of the box', 'Modern cloud platform running on AWS', 'Less customisation needed'],
+  cons: ['Smaller talent pool', 'Several separate product lines cause confusion', 'Smaller partner network'],
+  path: 'Lawson, Baan and older Infor products → CloudSuite.',
+  listen: ['M3', 'LN', 'SyteLine', 'CSI', 'Lawson', 'ION', 'Mongoose', 'Birst'],
+  angle: 'Always ask which Infor product. M3, LN and SyteLine skills do not transfer to each other.' },
+{ id: 'epicor', type: 'ERP', tier: 'Midmarket', name: 'Epicor Kinetic', vendor: 'Epicor', blurb: 'A midmarket favourite on the shop floor.',
+  fit: 'Make-to-order manufacturers and distributors.',
+  pros: ['Strong manufacturing depth for the price', 'Flexible, cloud or on-premise', 'Loyal customer base'],
+  cons: ['Small consultant pool', 'Upgrades from Epicor 9 or 10 can be heavy', 'Fewer third-party add-ons'],
+  path: 'Vantage, Epicor 9 / 10 → Kinetic.',
+  listen: ['Kinetic', 'Epicor 10', 'BPM', 'BAQ', 'Prophet 21', 'MES'],
+  angle: 'Niche talent. The best candidates are often super users at Epicor customers.' },
+{ id: 'intacct', type: 'ERP', tier: 'Midmarket', name: 'Sage Intacct', vendor: 'Sage', blurb: 'Cloud accounting that finance teams choose for themselves.',
+  fit: 'Services firms, nonprofits, healthcare, software companies.',
+  pros: ['Excellent core accounting and multi-entity consolidation', 'Flexible reporting using dimensions', 'Fast implementations'],
+  cons: ['Financials only: no deep inventory or manufacturing', 'Depends on integrations for everything else', 'Outgrown by complex operations'],
+  path: 'QuickBooks, Sage 100 / 300 → Intacct.',
+  listen: ['Dimensions', 'Multi-entity', 'Consolidations', 'Sage 100', 'Sage 300'],
+  angle: 'The buyer is a controller or CFO. The candidate is usually an accountant who became the systems person.' },
+{ id: 'acumatica', type: 'ERP', tier: 'Midmarket', name: 'Acumatica', vendor: 'Acumatica', blurb: 'A modern cloud ERP priced by usage instead of by user.',
+  fit: 'Small and midsize distribution, construction and manufacturing.',
+  pros: ['Pricing based on resources used, with unlimited users', 'Modern, flexible platform', 'Strong construction and distribution editions'],
+  cons: ['Sold only through resellers', 'Small talent pool', 'Not aimed at large enterprises'],
+  path: 'QuickBooks, Sage or Dynamics GP → Acumatica.',
+  listen: ['VAR', 'Reseller', 'C#', '.NET', 'Construction edition'],
+  angle: 'Customers lean on their reseller for everything, which makes an independent administrator or analyst attractive.' },
+{ id: 'salesforce', type: 'CRM', tier: 'Enterprise', name: 'Salesforce', vendor: 'Salesforce', blurb: 'The market leader. You will staff this one most.',
+  fit: 'Any size, and nearly every industry.',
+  pros: ['Most complete and customisable CRM', 'Enormous ecosystem of apps, partners and certified people', 'Steady stream of new products, including data and AI agents'],
+  cons: ['Expensive once add-ons are counted', 'Easy to over-customise into technical debt', 'Needs dedicated administrators to work well'],
+  path: 'Classic → Lightning, and legacy CPQ → Revenue Cloud. Three releases a year.',
+  listen: ['Sales Cloud', 'Service Cloud', 'Marketing Cloud', 'Experience Cloud', 'Apex', 'LWC', 'Flow', 'SOQL', 'CPQ', 'MuleSoft', 'Agentforce'],
+  angle: 'The ladder is administrator, business analyst, developer, architect. Certifications matter. Ask which clouds.' },
+{ id: 'd365ce', type: 'CRM', tier: 'Enterprise', name: 'Dynamics 365 Sales & Service', vendor: 'Microsoft', blurb: 'The CRM for companies that live in Outlook and Teams.',
+  fit: 'Mid-size and large Microsoft-centric organisations.',
+  pros: ['Works inside Outlook, Teams and Power BI', 'Low-code building with Power Platform', 'Often cheaper when bundled with other Microsoft licences'],
+  cons: ['Less polished than Salesforce in places', 'Smaller talent pool', 'Product names change often'],
+  path: 'Dynamics CRM on-premise (2011 to 2016) → Dynamics 365 online.',
+  listen: ['CE', 'Dataverse', 'Power Apps', 'Power Automate', 'Model-driven apps', 'C# plugins', 'Field Service'],
+  angle: '“Dynamics” is ambiguous. CE is the CRM, F&O is the ERP, and the skills are completely different.' },
+{ id: 'hubspot', type: 'CRM', tier: 'Midmarket', name: 'HubSpot', vendor: 'HubSpot', blurb: 'Easy to use, quick to set up, strongest in marketing.',
+  fit: 'Small and midsize companies, especially marketing-led ones.',
+  pros: ['People adopt it because it is simple', 'Excellent marketing automation', 'Fast setup, with a free tier to start'],
+  cons: ['Price climbs with contacts and tiers', 'Less depth for complex enterprise selling', 'Limited custom development'],
+  path: 'Spreadsheets → HubSpot. Some companies later move to Salesforce as they scale.',
+  listen: ['Marketing Hub', 'Sales Hub', 'Service Hub', 'Operations Hub', 'Workflows', 'Sequences', 'RevOps'],
+  angle: 'Roles are revenue operations and marketing operations more than developers.' },
+{ id: 'sapcx', type: 'CRM', tier: 'Enterprise', name: 'SAP Sales & Service Cloud', vendor: 'SAP', blurb: 'The CRM that SAP ERP customers consider first.',
+  fit: 'Companies already running SAP ERP.',
+  pros: ['Tight links to S/4HANA orders, pricing and stock', 'Strong e-commerce with SAP Commerce Cloud', 'One vendor to deal with'],
+  cons: ['Small market share and talent pool', 'User experience trails the leaders', 'Rarely chosen outside SAP shops'],
+  path: 'SAP CRM on-premise → Sales and Service Cloud.',
+  listen: ['C4C', 'SAP CRM', 'Commerce Cloud', 'Hybris', 'Emarsys', 'SAP CPQ'],
+  angle: 'Niche. It usually appears alongside an S/4HANA programme.' },
+{ id: 'oraclecx', type: 'CRM', tier: 'Enterprise', name: 'Oracle CX & Siebel', vendor: 'Oracle', blurb: 'An old giant and its cloud successor.',
+  fit: 'Telecoms, banks, insurers and other Oracle-centric enterprises.',
+  pros: ['Integrates with Oracle ERP', 'Strong in service-heavy industries', 'Siebel handles enormous, complicated operations'],
+  cons: ['Shrinking mindshare', 'Siebel talent is scarce and getting scarcer', 'Dated user experience'],
+  path: 'Siebel → Oracle CX, or very often → Salesforce.',
+  listen: ['Siebel', 'Oracle Sales', 'Oracle Service', 'Eloqua', 'Responsys', 'Oracle CPQ'],
+  angle: 'Siebel shops are migration prospects, and people who can keep Siebel running command a premium.' },
+{ id: 'zoho', type: 'CRM', tier: 'Small business', name: 'Zoho CRM', vendor: 'Zoho', blurb: 'A low-cost CRM inside a very broad app suite.',
+  fit: 'Small businesses and cost-conscious teams.',
+  pros: ['Low price', 'Dozens of connected apps in Zoho One', 'More customisable than its price suggests'],
+  cons: ['Less credibility with large enterprises', 'Small partner and talent ecosystem', 'Integrations outside Zoho can be awkward'],
+  path: 'Spreadsheets → Zoho. Growing companies sometimes move on to HubSpot or Salesforce.',
+  listen: ['Zoho One', 'Deluge', 'Zoho Creator'],
+  angle: 'Rarely a large staffing project. Know it so you are not caught blank.' }
+];
+
+const GLOSSARY = [
+['ERP', 'Software that runs core operations: finance, purchasing, inventory, manufacturing, HR.'],
+['CRM', 'Software that manages customer relationships: leads, deals, service cases, marketing.'],
+['Systems integrator (SI)', 'The consulting firm hired to implement the software.'],
+['Fit-to-standard', "Workshops that map the business onto the software's standard processes."],
+['Fit-gap', "The list of places where standard software doesn't meet a requirement."],
+['Configuration', 'Changing settings to fit the business. No code.'],
+['Customisation', 'Writing code to change how the software behaves.'],
+['RICEFW', 'Reports, interfaces, conversions, enhancements, forms, workflows: the custom build list.'],
+['SIT', 'System integration testing: do the connected pieces work end to end?'],
+['UAT', 'User acceptance testing: business users confirm it works for real jobs.'],
+['Cutover', 'The planned switch from the old system to the new one.'],
+['Go-live', 'The day the business starts running on the new system.'],
+['Hypercare', 'Extra support in the weeks right after go-live.'],
+['Greenfield', 'A brand-new implementation with redesigned processes.'],
+['Brownfield', 'Converting an existing system and keeping its data and custom code.'],
+['Data migration', 'Extracting, cleaning and loading data from the old system into the new.'],
+['Change management (OCM)', 'The work of getting people ready and willing to use the new system.'],
+['Functional consultant', 'Knows the business process and configures the system to match.'],
+['Technical consultant', 'Writes the code, integrations and reports.'],
+['Techno-functional', 'Understands the process and can also build.'],
+['Backfill', 'Temporary staff covering the day jobs of employees pulled onto the project.'],
+['SaaS', 'Software run by the vendor in the cloud and updated on their schedule.'],
+['On-premise', "Software installed on the company's own servers."],
+['Module', 'One functional area of an ERP, such as finance or purchasing.'],
+['Order-to-cash', 'The flow from sales order to delivery, invoice and payment.'],
+['Procure-to-pay', 'The flow from requisition to purchase order, receipt, invoice and payment.'],
+['Record-to-report', 'The flow from journal entries to month-end close and financial statements.'],
+['CPQ', 'Configure, price, quote: builds accurate quotes for complex products.'],
+['iPaaS', 'Cloud integration software that connects systems, such as MuleSoft or Boomi.'],
+['Master data', 'Core shared records: customers, vendors, items, chart of accounts.'],
+['Technical debt', 'Old custom work that makes every new change slower and riskier.'],
+['Regression testing', 'Re-testing existing processes after an update to check nothing broke.'],
+['Sandbox', 'A safe copy of the system for building and testing.'],
+['Steering committee', 'The executives who decide scope, budget and timeline.'],
+['Super user', 'A business employee trained deeply enough to support colleagues.'],
+['Three-way match', 'Checking purchase order, receipt and invoice agree before paying a vendor.']
+];
+
+const SPEED = [
+['General ledger', 'ERP'], ['Accounts payable', 'ERP'], ['Bill of materials', 'ERP'], ['Purchase orders', 'ERP'], ['Inventory valuation', 'ERP'],
+['Month-end close', 'ERP'], ['Production scheduling', 'ERP'], ['Fixed assets', 'ERP'], ['Three-way match', 'ERP'], ['Warehouse picking', 'ERP'],
+['Vendor master', 'ERP'], ['Cost centres', 'ERP'], ['Intercompany eliminations', 'ERP'], ['Chart of accounts', 'ERP'], ['Goods receipt', 'ERP'],
+['Bank reconciliation', 'ERP'], ['Material requirements planning', 'ERP'],
+['Lead scoring', 'CRM'], ['Opportunity pipeline', 'CRM'], ['Case management', 'CRM'], ['Email campaigns', 'CRM'], ['Territory assignment', 'CRM'],
+['Customer service queue', 'CRM'], ['Win / loss reasons', 'CRM'], ['Marketing automation', 'CRM'], ['Call logging', 'CRM'], ['Web-to-lead form', 'CRM'],
+['Knowledge articles for agents', 'CRM'], ['Renewal reminders', 'CRM'], ['Sales activity tracking', 'CRM'], ['Campaign response rates', 'CRM'],
+['Deal stages', 'CRM'], ['Contact history', 'CRM'], ['Field technician dispatch', 'CRM']
+];
+
+const LINEUPS = [
+{ name: 'An implementation, start to finish', items: ['Select software and partner', 'Design workshops', 'Build and configure', 'Migrate data', 'User acceptance testing', 'Train users', 'Go-live', 'Hypercare'] },
+{ name: 'Lead to cash', items: ['Lead', 'Opportunity', 'Quote', 'Sales order', 'Shipment', 'Invoice', 'Cash received'] },
+{ name: 'Procure to pay', items: ['Requisition', 'Purchase order', 'Goods receipt', 'Vendor invoice', 'Three-way match', 'Payment'] },
+{ name: "SAP's Activate method", items: ['Discover', 'Prepare', 'Explore', 'Realize', 'Deploy', 'Run'] }
+];
+
+const REQS = [
+{ q: 'Design workshops start Monday. The controller and two senior accountants will be in them three days a week.', o: ['Contract accountants to backfill them', 'ABAP developer', 'Test lead', 'Solution architect'], why: 'The experts are needed in the room. Someone has to keep the books closed.' },
+{ q: 'The old system holds 15 years of customer and vendor records, full of duplicates. Trial loads start in six weeks.', o: ['Data migration analyst', 'Trainer', 'Salesforce administrator', 'Project manager'], why: 'Cleaning, mapping and reconciling data is its own job, and it always takes longer than planned.' },
+{ q: 'The build is finished. Someone must plan test cycles, write scripts with the business and run UAT.', o: ['Test lead', 'Integration developer', 'Change manager', 'Backfill accountant'], why: 'Testing needs an owner who can organise business users and track defects.' },
+{ q: 'Salesforce went live in spring. Requests for fields, reports and automation are piling up and nobody owns them.', o: ['Salesforce administrator', 'Data migration lead', 'Cutover manager', 'ABAP developer'], why: 'An administrator owns the day-to-day backlog after go-live.' },
+{ q: 'The ERP must send orders to an outside warehouse and receive shipping confirmations back. Nobody on the team has built interfaces.', o: ['Integration developer', 'Functional finance consultant', 'Trainer', 'Business analyst'], why: 'Connecting systems is integration work.' },
+{ q: 'Go-live is in ten weeks. Four hundred users across six plants have never seen the new screens.', o: ['Change lead and trainers', 'Solution architect', 'Database administrator', 'Data migration analyst'], why: 'People who are not ready on day one are the most common cause of a rough go-live.' },
+{ q: "The partner's project manager reports to the partner. The CFO wants someone guarding the company's budget, scope and timeline.", o: ['Client-side project manager', 'Functional consultant', 'Test lead', 'Developer'], why: 'A client-side PM represents the company’s interests.' },
+{ q: 'Finance needs the system set up for a new revenue recognition policy. It should be done with settings, not code.', o: ['Functional finance consultant', 'Technical developer', 'Systems administrator', 'Trainer'], why: 'Translating a business rule into configuration is functional work.' }
+];
+
+/* Each option: [what you say, trust change, coaching note] */
+const CALLS = [
+{ id: 'cfo', who: 'Dana', role: 'CFO, $400M manufacturer', kind: 'Client', setup: 'You are catching up with Dana, a CFO you placed two accountants with last year. In passing she says: “We’re starting to look at S/4.”',
+  steps: [
+  { them: 'We’re starting to look at S/4.', o: [
+    ['What’s driving the timing? The 2027 maintenance deadline, or something in the business?', 2, 'You asked about the driver and showed you know the landscape.'],
+    ['We have great SAP consultants. Want me to send some résumés?', -1, 'Pitching before you know anything. This is the order-taker move.'],
+    ['S/4 is a huge project. Are you sure you want to take that on?', 0, 'Second-guessing her decision gets you nowhere.'] ] },
+  { them: 'The deadline, mostly. Our partner is recommending a brownfield conversion.', o: [
+    ['How customised is your ECC system today? Has anyone sized the custom code clean-up?', 2, 'Custom code is the big risk in a brownfield move. Good question.'],
+    ['Who’s the partner?', 1, 'Useful to know, but it doesn’t move the conversation forward.'],
+    ['You should go greenfield. It’s cleaner.', -1, 'You are prescribing without knowing her situation.'] ] },
+  { them: 'Heavily customised. Honestly, my bigger worry is my finance team. They have to run close and sit in design workshops.', o: [
+    ['That’s the piece partners don’t cover. Who backfills their day jobs while they’re in workshops?', 2, 'You found the gap on her side of the project.'],
+    ['We could send you a project manager.', 0, 'She told you the worry was her finance team. Listen for the gap.'],
+    ['They’ll manage. Most teams do.', -2, 'You dismissed the exact risk she raised.'] ] },
+  { them: 'Nobody, yet. What would you do?', o: [
+    ['Map the next two phases against your team. Backfill accountants before workshops start, then a test lead and a data analyst before testing. Can I bring a one-page plan on Thursday?', 2, 'Specific advice tied to her timeline, and a clear next step.'],
+    ['I’ll send some résumés over this week.', 0, 'Résumés for which roles? You skipped the plan.'],
+    ['Let me know when you have reqs open.', -1, 'You handed the initiative back. She asked for your view.'] ] } ] },
+{ id: 'revops', who: 'Marcus', role: 'VP Revenue Operations, software company', kind: 'Client', setup: 'Marcus’s company went live on Salesforce six months ago. He opens with: “Honestly, the reps hate it.”',
+  steps: [
+  { them: 'Honestly, the reps hate it.', o: [
+    ['When you say they hate it, what are they doing instead?', 2, 'You asked for the behaviour behind the complaint.'],
+    ['Sounds like you need a better administrator.', 0, 'Maybe, but you’re guessing.'],
+    ['HubSpot is easier. Have you thought about switching?', -2, 'Suggesting a platform switch on a hunch costs you credibility.'] ] },
+  { them: 'Spreadsheets. The forecast call is fiction. And our partner rolled off right after go-live.', o: [
+    ['Who owns the system day to day now? Is there an administrator, a backlog, a product owner?', 2, 'Ownership after go-live is the usual hole.'],
+    ['How many licences do you have?', 0, 'Not relevant to the problem he described.'],
+    ['Partners always do that.', -1, 'Complaining with him doesn’t help him.'] ] },
+  { them: 'One part-time administrator we inherited from IT. There are about 200 open requests.', o: [
+    ['What would a forecast you could trust be worth this quarter?', 2, 'You tied the problem to business value.'],
+    ['I can find you an administrator.', 1, 'Probably right, but you jumped past the impact.'],
+    ['You need three developers.', -1, 'A number from nowhere.'] ] },
+  { them: 'A lot. Our CRO presents pipeline to the board at quarter end.', o: [
+    ['Then start small: a senior administrator or analyst on contract to sort that backlog into quick wins for the reps. Then decide on a permanent owner. I’ll send two profiles and a 30-60-90 outline tomorrow.', 2, 'A sized, staged answer with a date on it.'],
+    ['Let’s open a full-time developer search.', 0, 'A slow fix for an urgent problem.'],
+    ['I’ll email you our rate card.', -1, 'He needs a plan. A price list isn’t one.'] ] } ] },
+{ id: 'cand', who: 'Priya', role: 'NetSuite consultant, six years', kind: 'Candidate', setup: 'Priya’s résumé says “NetSuite Implementation Consultant.” You have a midmarket client mid-implementation. You start the screen.',
+  steps: [
+  { them: 'Thanks for reaching out. What would you like to know?', o: [
+    ['Walk me through your last implementation. What was your part from kickoff to go-live?', 2, 'Open, specific, and it gets you role and life cycle in one answer.'],
+    ['Do you know SuiteScript?', 0, 'Too narrow to open with, and it assumes she is technical.'],
+    ['What’s your rate?', 0, 'You’ll need it, but leading with it tells her you are filling a slot.'] ] },
+  { them: 'I led financials: record-to-report across four subsidiaries. I configured everything. I don’t write code.', o: [
+    ['So a functional lead on financials. How many full life cycles, and did you stay through hypercare?', 2, 'You confirmed role type, then went for depth.'],
+    ['Which industries have you worked in?', 1, 'Worth knowing, but you left depth on the table.'],
+    ['Great, so you’re a developer.', -2, 'She just told you she doesn’t code.'] ] },
+  { them: 'Five full cycles. Two included data migration from QuickBooks and Dynamics GP.', o: [
+    ['On those migrations, what did you own: mapping, clean-up, loads, reconciliation?', 2, 'Precise questions earn a consultant’s respect.'],
+    ['Are you certified?', 1, 'Fine to ask, but less telling than what she actually did.'],
+    ['Nice. Would you be open to SAP roles?', -2, 'A different platform entirely. You lost her here.'] ] },
+  { them: 'Mapping and reconciliation. What I want next is client-side work with less travel.', o: [
+    ['That makes sense. Would you look at a client mid-implementation who needs a functional lead and may want to keep someone on after go-live? Here’s how I’d present you…', 2, 'You matched her motivation to a real need.'],
+    ['Most roles are with partners. Travel comes with it.', -1, 'You argued with what she wants.'],
+    ['I’ll keep your résumé on file.', -1, 'A strong candidate just heard “no”.'] ] } ] }
+];
+
+const QUESTIONS = [
+['Any client, first conversation', ['What systems run finance and operations today, and how long have they been in place?', "What's making the current system hard to live with?", 'Is anything on the roadmap in the next 12 to 18 months: an upgrade, a replacement, new modules?', 'Who owns the system day to day: IT, finance, or a dedicated team?']],
+['Selecting or planning', ["What's driving the timing?", 'Have you chosen a platform and an implementation partner yet?', 'Which of your people will be on the project team, and who covers their day jobs?', 'Who will represent your side on scope, budget and timeline?', "How clean is the data you'll be moving?"]],
+['Mid-project', ['Which phase are you in, and when is go-live?', 'Where is the project running behind?', "What does the partner's team cover, and what is left to you?", 'Who is writing test scripts and running UAT?', "What's the plan for training users and for cutover weekend?"]],
+['After go-live', ['How is adoption? What are people still doing in spreadsheets?', 'Who handles fixes and enhancements now the partner has rolled off?', 'How do you test each vendor release before it reaches your users?', 'What got pushed to phase two?']],
+['Upgrade or migration', ['Which version are you on, and when does support end?', 'Is this a technical upgrade, or are you redesigning how you work?', 'How much custom code do you have, and who still understands it?', 'Which integrations and reports will have to be rebuilt?']],
+['Candidates', ['Walk me through your last project from kickoff to go-live. What was your part?', 'Which modules or clouds have you configured hands-on?', 'Functional, technical, or both? Give me an example of each.', 'How many full life-cycle implementations, and which phases were you there for?', 'Were you on the consulting side or the client side?', 'Which version, and was it cloud or on-premise?', 'What did you personally own in data migration, testing or training?', "Explain that term to me like I'm a new hire on your team.", 'What do you want more of, and less of, in your next role?']]
+];
+
+const TRIGGERS = [
+['“We just acquired a company.”', 'Two sets of systems to consolidate.', 'Data migration analysts, integration developers, project manager, backfill accountants'],
+['“Our SAP ECC support ends in 2027.”', 'An S/4HANA move is being planned.', 'S/4 functional consultants by module, ABAP developers, test lead'],
+['“We’re still on Dynamics GP.”', 'Microsoft is retiring it. Business Central is the likely destination.', 'Business Central consultants, data migration, trainers'],
+['“Close takes us three weeks.”', 'Finance process and system pain.', 'Finance systems analyst, functional finance consultant, interim accountants'],
+['“We have a new CFO / CIO / CRO.”', 'New leaders review systems in their first year.', 'Client-side project manager, business analyst'],
+['“The reps won’t use the CRM.”', 'An adoption problem.', 'Administrator, business analyst, trainer'],
+['“Our partner rolled off after go-live.”', 'Nobody owns the backlog or the releases.', 'Administrator, support analyst, developer'],
+['“We go live in Q3.”', 'Testing, training and cutover crunch is coming.', 'Testers, trainers, hypercare support, backfill'],
+['“We’ve outgrown QuickBooks.”', 'A first real ERP: NetSuite, Intacct or Business Central.', 'Client-side project manager, implementation accountant, system administrator'],
+['“A private equity firm bought us.”', 'Pressure for faster reporting and standard systems.', 'Finance systems lead, ERP project manager, reporting analyst']
+];
+
+const OBJECTIONS = [
+['Client', '“Our implementation partner handles staffing.”', 'They staff their side. Who covers yours: the experts in workshops, the test scripts, the person holding the partner to scope? Those seats are usually the client’s to fill.'],
+['Client', '“We’ll use our own people.”', 'Good, they know the business best. Who does their day job while they’re in workshops three days a week? Backfilling them usually costs less than a late go-live.'],
+['Client', '“It’s too early. We haven’t picked a system.”', 'This is when a client-side project manager or business analyst earns their keep: requirements, demos, selection. And the scarce roles take longest to find, so it helps to map them now.'],
+['Client', '“We’re live. The project is over.”', 'Go-live is when the backlog starts. Who owns enhancements, the vendor’s releases and the phase-two list?'],
+['Client', '“Your rates are higher than our partner’s offshore team.”', 'Different seats. Offshore teams build. The roles I mean sit beside your users: testing, training, data decisions. Which of those would you be comfortable running remotely?'],
+['Candidate', '“I only want remote work.”', 'Understood. Workshops, testing and go-live week often need people in the room. Would you travel for those weeks if the rest is remote?'],
+['Candidate', '“I’m an SAP consultant. I can do any SAP role.”', 'Clients hire by module and by phase. Which module could you configure from a blank system tomorrow, and which have you only supported?']
+];
+
+const PHASES = [
+['Select and plan', 'Requirements, demos, software and partner selection', 'Client-side project manager, business analyst, solution architect'],
+['Design', 'Fit-to-standard workshops, gap list', 'Functional consultants, plus backfill for the client’s experts'],
+['Build', 'Configuration, custom code, integrations, reports', 'Functional consultants, developers, integration developers'],
+['Data migration', 'Clean, map, trial loads, reconcile', 'Data migration lead, data analysts'],
+['Test', 'System testing, UAT, regression', 'Test lead, testers'],
+['Train and prepare', 'Training, communications, cutover rehearsal', 'Change lead, trainers, cutover manager'],
+['Go-live and hypercare', 'Cutover weekend, daily issue triage', 'Hypercare support, super users, help desk'],
+['Run and improve', 'Enhancements, vendor releases, phase two', 'Administrator, support analyst, developer']
+];
+
+const BADGES = [
+['first', 'First Pitch', 'Finish your first inning'],
+['perfect', 'Perfect Game', 'Score 4 of 4 on a quiz'],
+['nine', 'Complete Game', 'Finish all nine innings'],
+['scout', 'Head Scout', 'Open every platform report'],
+['hands', 'Quick Hands', 'Score 300 in Which System?'],
+['dict', 'Walking Glossary', 'Clear Jargon Match without a miss'],
+['order', 'Batting Order', 'Finish Go-Live Lineup without a miss'],
+['gm', 'General Manager', 'Fill every req correctly'],
+['advisor', 'Trusted Adviser', 'Reach full trust on a call']
+];
+
+const RANKS = [[0, 'Rookie'], [150, 'Prospect'], [400, 'Starter'], [750, 'Closer'], [1150, 'All-Star'], [1500, 'MVP']];
+
+/* ════════════════════════════ ENGINE ════════════════════════════ */
+
+const KEY = 'spring-training-v1';
+const $ = (s, r) => (r || document).querySelector(s);
+const view = $('#view');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const set = html => { view.innerHTML = html; };
+
+function blank() { return { xp: 0, lessons: {}, games: {}, badges: {}, seen: {} }; }
+function load() {
+  try { return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { return blank(); }
+}
+let S = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* progress lasts for this visit only */ } }
+
+function rankOf(xp) { let i = 0; RANKS.forEach((r, k) => { if (xp >= r[0]) i = k; }); return i; }
+function toast(big, small) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<small>${esc(small)}</small><b>${esc(big)}</b>`;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+function drawRank() {
+  const r = rankOf(S.xp), next = RANKS[r + 1];
+  const pct = next ? Math.round((S.xp - RANKS[r][0]) / (next[0] - RANKS[r][0]) * 100) : 100;
+  $('#rank').innerHTML = `<span>${RANKS[r][1]}</span><span class="meter" title="${next ? next[0] - S.xp + ' XP to ' + next[1] : 'Top rank'}"><i style="width:${pct}%"></i></span><b>${S.xp} XP</b>`;
+}
+function addXp(n, why) {
+  if (n <= 0) return;
+  const before = rankOf(S.xp);
+  S.xp += n; save();
+  toast('+' + n + ' XP', why);
+  if (rankOf(S.xp) > before) toast(RANKS[rankOf(S.xp)][1], 'Promoted to');
+  drawRank();
+}
+function award(id) {
+  if (S.badges[id]) return;
+  S.badges[id] = 1; save();
+  toast(BADGES.find(b => b[0] === id)[1], 'Badge earned');
+}
+/* Games pay XP only for beating your own best, so replaying is practice, not farming. */
+function gameDone(id, score, xp) {
+  const g = S.games[id] || { best: 0, xp: 0 };
+  const gain = Math.max(0, xp - g.xp);
+  S.games[id] = { best: Math.max(g.best, score), xp: Math.max(g.xp, xp) };
+  save();
+  addXp(gain, 'New personal best');
+  return gain;
+}
+
+let H = {};          // click handlers for the current view
+let cleanup = null;  // timers and listeners the current view must release
+view.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]');
+  if (el && H[el.dataset.a]) H[el.dataset.a](el);
+});
+
+const head = (kicker, title, sub) => `<div class="stack" style="gap:4px"><p class="kicker">${kicker}</p><h1>${title}</h1>${sub ? `<p class="muted">${sub}</p>` : ''}</div>`;
+
+function resultView(o) {
+  set(`<section class="stage"><div class="card stack center">
+    <p class="kicker">${o.kicker}</p><div class="big">${o.big}</div><h2>${o.title}</h2>
+    <p class="muted">${o.line}</p>${o.gain ? `<span class="pill gold">+${o.gain} XP</span>` : ''}
+    <div class="row" style="justify-content:center">${o.actions}</div></div></section>`);
+}
+
+/* One quiz runner shared by lessons and the Fill the Req game. */
+function quizUI(cfg) {
+  const qs = cfg.qs.map(q => ({ q: q.q, why: q.why, opts: shuffle(q.o.map((t, k) => ({ t, ok: k === 0 }))) }));
+  let i = 0, right = 0, picked = -1;
+  function draw() {
+    const q = qs[i], done = picked >= 0;
+    set(`<section class="stage">${head(cfg.kicker, cfg.title)}
+      <div class="segs">${qs.map((_, k) => `<i class="${k < i ? 'on' : k === i ? 'cur' : ''}"></i>`).join('')}</div>
+      <div class="card slide"><p class="kicker">${cfg.label || 'Question'} ${i + 1} of ${qs.length}</p><h2>${esc(q.q)}</h2>
+      ${cfg.ask ? `<p class="muted">${cfg.ask}</p>` : ''}
+      <div class="opts">${q.opts.map((o, k) => `<button class="opt ${!done ? '' : o.ok ? 'ok' : k === picked ? 'no' : 'dim'}" data-a="pick" data-k="${k}" ${done ? 'disabled' : ''}>${esc(o.t)}</button>`).join('')}</div>
+      ${done ? `<div class="why ${q.opts[picked].ok ? 'good' : 'bad'}"><strong>${q.opts[picked].ok ? 'Correct.' : 'Not quite.'}</strong> ${esc(q.why)}</div>
+      <div class="row end"><button class="btn primary" data-a="nq">${i < qs.length - 1 ? 'Next' : 'See result'}</button></div>` : ''}
+      </div></section>`);
+    if (done) $('[data-a="nq"]').focus();
+  }
+  H = {
+    pick(el) { if (picked >= 0) return; picked = +el.dataset.k; if (qs[i].opts[picked].ok) right++; draw(); },
+    nq() { if (i < qs.length - 1) { i++; picked = -1; draw(); } else cfg.done(right, qs.length); }
+  };
+  draw();
+}
+
+/* ───────── Home ───────── */
+function lessonState(L) {
+  const s = S.lessons[L.id];
+  if (!s) return ['Not started', ''];
+  if (s.best == null) return ['Read', 'accent'];
+  return s.best === L.quiz.length ? ['Perfect', 'gold'] : [s.best + ' of ' + L.quiz.length, 'good'];
+}
+function viewHome() {
+  const nextIdx = LESSONS.findIndex(L => !S.lessons[L.id] || S.lessons[L.id].best == null);
+  const started = Object.keys(S.lessons).length > 0;
+  const r = rankOf(S.xp), next = RANKS[r + 1];
+  const cells = LESSONS.map(L => { const s = S.lessons[L.id]; return s && s.best != null ? `<td class="lit">${s.best}</td>` : '<td>–</td>'; }).join('');
+  let confirmReset = false;
+  set(`<section class="hero">
+    <div class="stack">
+      <p class="kicker">Training for IT and digital staffing sales</p>
+      <h1>Know the systems. Ask better questions.</h1>
+      <p>Nine short innings on ERP and CRM: what they are, who sells them, how projects run, and how to talk about them with clients and candidates. Earn XP, climb from Rookie to MVP.</p>
+      <div class="row">
+        <a class="btn primary" href="#inning-${nextIdx < 0 ? 1 : nextIdx + 1}">${nextIdx < 0 ? 'Replay inning 1' : (started ? 'Continue with' : 'Start') + ' inning ' + (nextIdx + 1)}</a>
+        <a class="btn" href="#games">Play a game</a>
+      </div>
+    </div>
+    <div class="board" aria-label="Your line score">
+      <table><tr>${LESSONS.map((_, i) => `<th>${i + 1}</th>`).join('')}<th>XP</th></tr><tr>${cells}<td class="tot">${S.xp}</td></tr></table>
+      <div class="cap"><span>Quiz score by inning, out of 4</span><span>Rank <b>${RANKS[r][1]}</b></span><span>${next ? `<b>${next[0] - S.xp}</b> XP to ${next[1]}` : 'Top of the order'}</span></div>
+    </div>
+  </section>
+  <section class="stack"><h2>The nine innings</h2>
+    <div class="lessons">${LESSONS.map((L, i) => { const st = lessonState(L); return `<a class="lesson" href="#inning-${i + 1}">
+      <span class="no">${i + 1}</span><h3>${L.title}</h3><p>${L.sub}</p><span><span class="pill ${st[1]}">${st[0]}</span></span></a>`; }).join('')}</div>
+  </section>
+  <section class="stack"><h2>Badges</h2>
+    <div class="badges">${BADGES.map(b => `<div class="badge ${S.badges[b[0]] ? 'on' : ''}"><b>${b[1]}</b>${b[2]}</div>`).join('')}</div>
+  </section>
+  <footer class="row between"><span>Progress is saved in this browser only. Vendor dates and product names change, so check the vendor's site before quoting one to a client.</span>
+    <button class="btn small" data-a="reset" id="reset">Reset my progress</button></footer>`);
+  H = { reset(el) {
+    if (!confirmReset) { confirmReset = true; el.textContent = 'Press again to erase everything'; return; }
+    S = blank(); save(); drawRank(); viewHome();
+  } };
+}
+
+/* ───────── Lessons ───────── */
+function viewLesson(i) {
+  const L = LESSONS[i];
+  let step = 0;
+  const kicker = 'Inning ' + (i + 1) + ' of ' + LESSONS.length;
+  function read() {
+    const s = L.slides[step], last = step === L.slides.length - 1;
+    set(`<section class="stage">${head(kicker, L.title, L.sub)}
+      <div class="segs">${L.slides.map((_, k) => `<i class="${k < step ? 'on' : k === step ? 'cur' : ''}"></i>`).join('')}<i></i></div>
+      <article class="card slide"><h2>${s.t}</h2><div class="slide scroll">${s.b}</div>
+      ${s.say ? `<div class="say"><b>Ask it like this</b>“${s.say}”</div>` : ''}</article>
+      <div class="row between"><button class="btn" data-a="back" ${step ? '' : 'disabled'}>Back</button>
+      <button class="btn primary" data-a="next">${last ? 'Take the quiz' : 'Next'}</button></div></section>`);
+    H = { back() { if (step) { step--; read(); } }, next() { if (!last) { step++; read(); window.scrollTo(0, 0); } else quiz(); } };
+  }
+  function quiz() {
+    const st = S.lessons[L.id] || (S.lessons[L.id] = {});
+    if (!st.read) { st.read = 1; save(); addXp(30, 'Inning read'); }
+    quizUI({ kicker, title: L.title + ' quiz', qs: L.quiz, done(right, total) {
+      const prev = st.best == null ? 0 : st.best, gain = Math.max(0, right - prev) * 20;
+      st.best = Math.max(prev, right); save();
+      addXp(gain, 'Quiz score');
+      award('first');
+      if (right === total) award('perfect');
+      if (LESSONS.every(x => S.lessons[x.id] && S.lessons[x.id].best != null)) award('nine');
+      const nxt = LESSONS[i + 1];
+      resultView({ kicker, big: right + '/' + total, gain,
+        title: right === total ? 'Perfect inning' : right >= total - 1 ? 'Solid inning' : 'Worth another at-bat',
+        line: right === total ? 'Every answer right.' : 'Retake the quiz to raise your score. XP is paid for improvement.',
+        actions: `<button class="btn" data-a="retry">Retake quiz</button><button class="btn" data-a="reread">Re-read</button>
+          <a class="btn primary" href="${nxt ? '#inning-' + (i + 2) : '#games'}">${nxt ? 'Next inning: ' + nxt.title : 'Go to the games'}</a>` });
+      H = { retry: quiz, reread() { step = 0; read(); } };
+    } });
+  }
+  read();
+}
+
+/* ───────── Platforms ───────── */
+function viewPlatforms() {
+  let filter = 'All', open = null;
+  function draw() {
+    const list = PLATFORMS.filter(p => filter === 'All' || p.type === filter);
+    const p = open && PLATFORMS.find(x => x.id === open);
+    const seen = Object.keys(S.seen).length;
+    set(`${head('Scouting reports', 'Platforms', 'Sixteen systems you will hear named. Open each one for strengths, watch-outs, upgrade paths and the words to listen for.')}
+      <div class="row between"><div class="chips">${['All', 'ERP', 'CRM'].map(f => `<button class="chip" data-a="filter" data-f="${f}" aria-pressed="${f === filter}">${f}</button>`).join('')}</div>
+      <span class="pill ${seen === PLATFORMS.length ? 'gold' : ''}">${seen} of ${PLATFORMS.length} opened</span></div>
+      <div id="pdetail">${p ? `<article class="card stack">
+        <div class="row between"><div><p class="kicker">${p.vendor} · ${p.type} · ${p.tier}</p><h2>${p.name}</h2></div><button class="btn small" data-a="close">Close</button></div>
+        <p><strong>Best fit:</strong> ${p.fit}</p>
+        <div class="cols"><div class="plus"><h3>Advantages</h3><ul>${p.pros.map(x => `<li>${x}</li>`).join('')}</ul></div>
+        <div class="minus"><h3>Disadvantages</h3><ul>${p.cons.map(x => `<li>${x}</li>`).join('')}</ul></div></div>
+        <p><strong>Upgrade and migration paths:</strong> ${p.path}</p>
+        <div><p><strong>Words to listen for</strong></p><div class="chips" style="margin-top:6px">${p.listen.map(x => `<span class="tag">${x}</span>`).join('')}</div></div>
+        <div class="say"><b>Staffing angle</b>${p.angle}</div></article>` : ''}</div>
+      <div class="pgrid">${list.map(x => `<button class="pcard" data-a="open" data-id="${x.id}" aria-pressed="${x.id === open}">
+        <span class="row between"><span class="pill ${x.type === 'ERP' ? 'accent' : 'good'}">${x.type}</span>${S.seen[x.id] ? '<span class="pill">Opened</span>' : ''}</span>
+        <h3>${x.name}</h3><p>${x.blurb}</p></button>`).join('')}</div>`);
+  }
+  H = {
+    filter(el) { filter = el.dataset.f; draw(); },
+    close() { open = null; draw(); },
+    open(el) {
+      open = el.dataset.id;
+      const fresh = !S.seen[open];
+      if (fresh) { S.seen[open] = 1; save(); }
+      draw();
+      if (fresh) { addXp(5, 'Platform scouted'); if (Object.keys(S.seen).length === PLATFORMS.length) award('scout'); }
+      $('#pdetail').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  };
+  draw();
+}
+
+/* ───────── Games ───────── */
+const GAMES = {
+  speed: { name: 'Which System?', desc: 'A term flashes up. ERP or CRM? You have 45 seconds, and streaks multiply your score.', max: 120, unit: 'points', play: playSpeed },
+  match: { name: 'Jargon Match', desc: 'Pair six project terms with their plain-English meanings. Misses cost XP.', max: 80, unit: 'XP', play: playMatch },
+  lineup: { name: 'Go-Live Lineup', desc: 'Put the steps of a project, and of the processes behind it, in the right order.', max: 100, unit: 'XP', play: playLineup },
+  req: { name: 'Fill the Req', desc: 'Eight project situations. Pick the role the client needs before they ask.', max: 100, unit: 'of 8', play: playReq },
+  call: { name: 'Client Call', desc: 'Three live conversations. Every reply moves the trust meter. Advise, or take orders.', max: 240, unit: 'trust', play: playCall }
+};
+function viewGames() {
+  set(`${head('Batting cage', 'Games', 'Practice until it is automatic. Each game pays XP when you beat your own best.')}
+    <div class="games">${Object.keys(GAMES).map(id => { const g = GAMES[id], s = S.games[id] || (id === 'call' ? null : null);
+      const callXp = id === 'call' ? CALLS.reduce((n, c) => n + ((S.games['call-' + c.id] || {}).xp || 0), 0) : 0;
+      const earned = id === 'call' ? callXp : s ? s.xp : 0;
+      return `<article class="card game"><h2>${g.name}</h2><p class="muted">${g.desc}</p>
+        <div class="row between"><span class="pill ${earned >= g.max ? 'gold' : earned ? 'good' : ''}">${earned} / ${g.max} XP</span><a class="btn primary" href="#play-${id}">Play</a></div></article>`; }).join('')}</div>`);
+  H = {};
+}
+const again = id => `<a class="btn" href="#games">All games</a><button class="btn primary" data-a="again">Play again</button>`;
+
+function playSpeed() {
+  let deck, k, score, combo, left, hits, timer = null, flash = '';
+  function intro() {
+    set(`<section class="stage">${head('Game', 'Which System?')}<div class="card stack">
+      <p>A term appears. Decide whether it lives in the ERP or the CRM. Three in a row doubles your points, six in a row triples them. A miss resets the streak.</p>
+      <p class="muted">On a keyboard, use the left arrow for ERP and the right arrow for CRM.</p>
+      <div class="row"><button class="btn primary" data-a="go">Start the clock</button><a class="btn" href="#games">Back</a></div></div></section>`);
+    H = { go: start };
+  }
+  function start() {
+    deck = shuffle(SPEED); k = 0; score = 0; combo = 0; left = 45; hits = 0; flash = '';
+    set(`<section class="stage">${head('Game', 'Which System?')}<div class="card stack">
+      <div class="hud"><span>Time <b id="sp-t">45</b></span><span id="sp-c"></span><span>Score <b id="sp-s">0</b></span></div>
+      <div class="term" id="sp-term"></div><p class="center muted" id="sp-f" style="min-height:1.6em;text-align:center"></p>
+      <div class="two"><button class="btn" data-a="ans" data-s="ERP">ERP</button><button class="btn" data-a="ans" data-s="CRM">CRM</button></div></div></section>`);
+    H = { ans(el) { answer(el.dataset.s); } };
+    show();
+    timer = setInterval(() => { left--; $('#sp-t').textContent = left; if (left <= 0) end(); }, 1000);
+  }
+  function show() {
+    if (k >= deck.length) { deck = shuffle(SPEED); k = 0; }
+    $('#sp-term').textContent = deck[k][0];
+    $('#sp-s').textContent = score;
+    $('#sp-c').textContent = combo >= 6 ? 'Streak ×3' : combo >= 3 ? 'Streak ×2' : '';
+    $('#sp-f').textContent = flash;
+  }
+  function answer(s) {
+    if (!timer) return;
+    const item = deck[k];
+    if (item[1] === s) { combo++; hits++; score += 10 * (combo >= 6 ? 3 : combo >= 3 ? 2 : 1); flash = ''; }
+    else { combo = 0; flash = item[0] + ' lives in the ' + item[1] + '.'; }
+    k++; show();
+  }
+  function key(e) {
+    if (e.key === 'ArrowLeft') answer('ERP'); else if (e.key === 'ArrowRight') answer('CRM');
+  }
+  function end() {
+    clearInterval(timer); timer = null;
+    const gain = gameDone('speed', score, Math.min(120, Math.round(score / 4)));
+    if (score >= 300) award('hands');
+    resultView({ kicker: 'Which System?', big: score, gain, title: score >= 300 ? 'Quick hands' : score >= 150 ? 'Good eye' : 'Keep swinging',
+      line: hits + ' correct. Your best is ' + S.games.speed.best + '.', actions: again() });
+    H = { again: start };
+  }
+  document.addEventListener('keydown', key);
+  cleanup = () => { clearInterval(timer); timer = null; document.removeEventListener('keydown', key); };
+  intro();
+}
+
+function playMatch() {
+  let pairs, terms, defs, sel, done, misses, wrong;
+  function start() {
+    pairs = shuffle(GLOSSARY).slice(0, 6);
+    terms = shuffle(pairs.map((_, i) => i)); defs = shuffle(pairs.map((_, i) => i));
+    sel = -1; done = {}; misses = 0; wrong = -1; draw();
+  }
+  function draw() {
+    set(`<section class="stage">${head('Game', 'Jargon Match', 'Pick a term, then pick its meaning.')}
+      <div class="hud"><span>Matched <b>${Object.keys(done).length}</b> of 6</span><span>Misses <b>${misses}</b></span></div>
+      <div class="match"><div class="opts">${terms.map(i => `<button class="opt ${done[i] ? 'ok' : i === sel ? 'sel' : ''}" data-a="term" data-i="${i}" ${done[i] ? 'disabled' : ''}><strong>${esc(pairs[i][0])}</strong></button>`).join('')}</div>
+      <div class="opts">${defs.map(i => `<button class="opt ${done[i] ? 'ok' : i === wrong ? 'shake' : ''}" data-a="def" data-i="${i}" ${done[i] ? 'disabled' : ''}>${esc(pairs[i][1])}</button>`).join('')}</div></div></section>`);
+    wrong = -1;
+  }
+  H = {
+    term(el) { sel = +el.dataset.i; draw(); },
+    def(el) {
+      const i = +el.dataset.i;
+      if (sel < 0) return;
+      if (i === sel) { done[i] = 1; sel = -1; } else { misses++; wrong = i; }
+      if (Object.keys(done).length === 6) return finish();
+      draw();
+    },
+    again: start
+  };
+  function finish() {
+    const xp = Math.max(20, 80 - misses * 10), gain = gameDone('match', xp, xp);
+    if (!misses) award('dict');
+    resultView({ kicker: 'Jargon Match', big: misses ? misses + (misses === 1 ? ' miss' : ' misses') : 'Clean', gain,
+      title: misses ? 'All six matched' : 'Not a single miss', line: 'Each round draws six new terms from the glossary.', actions: again() });
+  }
+  start();
+}
+
+function playLineup() {
+  let si, placed, errs, totalErr, pool, wrong, xp;
+  function start() { si = 0; totalErr = 0; xp = 0; round(); }
+  function round() { placed = 0; errs = 0; wrong = ''; pool = shuffle(LINEUPS[si].items); draw(); }
+  function draw() {
+    const set_ = LINEUPS[si];
+    set(`<section class="stage">${head('Game · round ' + (si + 1) + ' of ' + LINEUPS.length, 'Go-Live Lineup', 'Tap the steps in the order they happen.')}
+      <div class="card stack"><div class="row between"><h2>${set_.name}</h2><span class="pill ${errs ? 'bad' : ''}">Misses ${errs}</span></div>
+      <ol class="lineup">${set_.items.map((t, k) => k < placed ? `<li>${t}</li>` : k === placed ? '<li class="empty">Next step?</li>' : '').join('')}</ol>
+      <div class="chips">${pool.filter(t => set_.items.indexOf(t) >= placed).map(t => `<button class="chip ${t === wrong ? 'shake' : ''}" data-a="tap" data-t="${esc(t)}">${t}</button>`).join('')}</div>
+      ${placed === set_.items.length ? `<div class="row end"><button class="btn primary" data-a="nextset">${si < LINEUPS.length - 1 ? 'Next round' : 'See result'}</button></div>` : ''}</div></section>`);
+    wrong = '';
+  }
+  H = {
+    tap(el) {
+      const items = LINEUPS[si].items;
+      if (el.dataset.t === items[placed]) placed++; else { errs++; wrong = el.dataset.t; }
+      draw();
+    },
+    nextset() {
+      xp += Math.max(5, 25 - errs * 5); totalErr += errs;
+      if (si < LINEUPS.length - 1) { si++; round(); return; }
+      const gain = gameDone('lineup', xp, xp);
+      if (!totalErr) award('order');
+      resultView({ kicker: 'Go-Live Lineup', big: xp, gain, title: totalErr ? 'Lineup set' : 'A perfect card',
+        line: totalErr + (totalErr === 1 ? ' miss' : ' misses') + ' across four rounds.', actions: again() });
+    },
+    again: start
+  };
+  start();
+}
+
+function playReq() {
+  function start() {
+    quizUI({ kicker: 'Game', title: 'Fill the Req', label: 'Situation', ask: 'Which role does this client need most?', qs: shuffle(REQS), done(right, total) {
+      const gain = gameDone('req', right, right === total ? 100 : right * 12);
+      if (right === total) award('gm');
+      resultView({ kicker: 'Fill the Req', big: right + '/' + total, gain, title: right === total ? 'Every seat filled' : 'Roster nearly set',
+        line: 'The Playbook has a phase-by-phase table of who is needed when.', actions: again() });
+      H = { again: start };
+    } });
+  }
+  start();
+}
+
+function playCall() {
+  function pick() {
+    set(`<section class="stage">${head('Game', 'Client Call', 'Choose what you would say. Good questions build trust. Pitching early loses it.')}
+      ${CALLS.map(c => { const g = S.games['call-' + c.id]; return `<article class="card stack"><div class="row between"><div><p class="kicker">${c.kind}</p><h2>${c.who}</h2><p class="muted">${c.role}</p></div>
+        ${g ? `<span class="pill ${g.best === 8 ? 'gold' : 'good'}">Best ${g.best} / 8</span>` : ''}</div><p>${c.setup}</p>
+        <div class="row end"><button class="btn primary" data-a="start" data-id="${c.id}">Start the call</button></div></article>`; }).join('')}</section>`);
+    H = { start(el) { run(CALLS.find(c => c.id === el.dataset.id)); } };
+  }
+  function run(c) {
+    let step = 0, trust = 0, log = [], opts, chosen = null;
+    const deal = () => { opts = shuffle(c.steps[step].o); chosen = null; };
+    function draw() {
+      const s = c.steps[step];
+      set(`<section class="stage">${head(c.kind + ' call', c.who, c.role)}
+        <div class="row between"><span class="kicker">Trust</span><span class="trust" aria-label="Trust ${Math.max(0, trust)} of 8">${Array.from({ length: 8 }, (_, k) => `<i class="${k < trust ? 'on' : ''}"></i>`).join('')}</span></div>
+        <div class="card stack"><div class="talk">${log.map(l => `<div class="line ${l[0] ? 'you' : ''}"><small>${l[0] ? 'You' : c.who}</small>${l[1]}</div>`).join('')}
+          <div class="line"><small>${c.who}</small>${s.them}</div>
+          ${chosen ? `<div class="line you"><small>You</small>${chosen[0]}</div>` : ''}</div>
+        ${chosen ? `<div class="why ${chosen[1] > 0 ? 'good' : chosen[1] < 0 ? 'bad' : ''}"><strong>${chosen[1] > 0 ? '+' + chosen[1] + ' trust.' : chosen[1] < 0 ? chosen[1] + ' trust.' : 'No change.'}</strong> ${chosen[2]}</div>
+          <div class="row end"><button class="btn primary" data-a="cont">${step < c.steps.length - 1 ? 'Continue' : 'End the call'}</button></div>`
+        : `<div class="opts">${opts.map((o, k) => `<button class="opt" data-a="say" data-k="${k}">${o[0]}</button>`).join('')}</div>`}</div></section>`);
+      if (chosen) $('[data-a="cont"]').focus();
+    }
+    H = {
+      say(el) { chosen = opts[+el.dataset.k]; trust += chosen[1]; draw(); },
+      cont() {
+        log.push([0, c.steps[step].them], [1, chosen[0]]);
+        if (step < c.steps.length - 1) { step++; deal(); draw(); return; }
+        const t = Math.max(0, trust), gain = gameDone('call-' + c.id, t, t * 10);
+        if (t === 8) award('advisor');
+        resultView({ kicker: c.who + ' · ' + c.role, big: t + '/8', gain,
+          title: t === 8 ? 'Trusted adviser' : t >= 5 ? 'Good call, a few early pitches' : 'That was order-taking',
+          line: t === 8 ? 'You asked before you offered, every time.' : 'Replay it and look for the question that uncovers the gap.',
+          actions: `<button class="btn" data-a="pickAgain">Other calls</button><button class="btn primary" data-a="again">Replay this call</button>` });
+        H = { again() { run(c); }, pickAgain: pick };
+      }
+    };
+    deal(); draw();
+  }
+  pick();
+}
+
+/* ───────── Playbook ───────── */
+function viewPlaybook() {
+  const TABS = [['q', 'Discovery questions'], ['t', 'Trigger events'], ['o', 'Objections'], ['p', 'Phases and roles'], ['g', 'Glossary']];
+  let tab = 'q', term = '';
+  const glossary = () => {
+    const f = term.trim().toLowerCase();
+    const rows = GLOSSARY.filter(g => !f || (g[0] + ' ' + g[1]).toLowerCase().indexOf(f) >= 0).sort((a, b) => a[0].localeCompare(b[0]));
+    return rows.length ? `<dl>${rows.map(g => `<dt>${esc(g[0])}</dt><dd>${esc(g[1])}</dd>`).join('')}</dl>` : '<p class="muted">No term matches. Try a shorter search.</p>';
+  };
+  function body() {
+    if (tab === 'q') return QUESTIONS.map(g => `<div class="card stack" style="gap:4px"><h2>${g[0]}</h2>${g[1].map(q => `<div class="qrow"><span>${esc(q)}</span><button class="btn small" data-a="copy" data-q="${esc(q)}">Copy</button></div>`).join('')}</div>`).join('');
+    if (tab === 't') return `<div class="card scroll"><table class="ptable" style="border-collapse:collapse;width:100%;min-width:560px"><tr><th>You hear</th><th>It usually means</th><th>Roles to raise</th></tr>${TRIGGERS.map(t => `<tr><td><strong>${t[0]}</strong></td><td>${t[1]}</td><td>${t[2]}</td></tr>`).join('')}</table></div>`;
+    if (tab === 'o') return `<div class="card">${OBJECTIONS.map(o => `<details><summary><span class="pill ${o[0] === 'Client' ? 'accent' : 'good'}">${o[0]}</span> ${o[1]}</summary><p>${o[2]}</p></details>`).join('')}</div>`;
+    if (tab === 'p') return `<div class="card scroll"><table class="ptable" style="border-collapse:collapse;width:100%;min-width:560px"><tr><th>Phase</th><th>What happens</th><th>Who is needed</th></tr>${PHASES.map((p, i) => `<tr><td><strong>${i + 1}. ${p[0]}</strong></td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join('')}</table></div>`;
+    return `<div class="card stack"><label for="gsearch" class="kicker">Search ${GLOSSARY.length} terms</label><input type="search" id="gsearch" placeholder="Try “cutover” or “testing”" value="${esc(term)}"><div id="gl">${glossary()}</div></div>`;
+  }
+  function draw() {
+    set(`${head('Take it to the field', 'Playbook', 'Questions, signals and answers to use on real calls.')}
+      <div class="chips" role="tablist">${TABS.map(t => `<button class="chip" data-a="tab" data-t="${t[0]}" aria-pressed="${t[0] === tab}">${t[1]}</button>`).join('')}</div>
+      <div class="stack">${body()}</div>`);
+    const s = $('#gsearch');
+    if (s) s.addEventListener('input', () => { term = s.value; $('#gl').innerHTML = glossary(); });
+  }
+  H = {
+    tab(el) { tab = el.dataset.t; draw(); },
+    copy(el) {
+      const done = () => { el.textContent = 'Copied'; setTimeout(() => { el.textContent = 'Copy'; }, 1500); };
+      const fallback = () => { const r = document.createRange(); r.selectNodeContents(el.previousElementSibling); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); el.textContent = 'Selected'; };
+      try { navigator.clipboard.writeText(el.dataset.q).then(done, fallback); } catch (e) { fallback(); }
+    }
+  };
+  draw();
+}
+
+/* ───────── Router ───────── */
+function route() {
+  if (cleanup) { cleanup(); cleanup = null; }
+  const h = (location.hash || '#home').slice(1);
+  let m, nav = 'home';
+  if ((m = h.match(/^inning-(\d)$/)) && LESSONS[m[1] - 1]) viewLesson(m[1] - 1);
+  else if (h === 'platforms') { nav = h; viewPlatforms(); }
+  else if (h === 'games') { nav = h; viewGames(); }
+  else if ((m = h.match(/^play-(\w+)$/)) && GAMES[m[1]]) { nav = 'games'; GAMES[m[1]].play(); }
+  else if (h === 'playbook') { nav = h; viewPlaybook(); }
+  else viewHome();
+  document.querySelectorAll('#nav a').forEach(a => { if (a.dataset.n === nav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+drawRank();
+route();
+})();
+</script>
+</body>
+</html>
