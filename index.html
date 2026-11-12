@@ -195,6 +195,10 @@ input[type="search"] { font: inherit; padding: 9px 12px; border-radius: var(--r-
 dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); }
 dt, dd { margin: 0; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
 dt { font-weight: 700; }
+.lb td.num, .lb th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.lb tr.me td { background: var(--gold-soft); font-weight: 700; }
+.lb td:first-child { width: 3ch; color: var(--muted); }
+input[type="text"] { font: inherit; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--card); color: var(--text); width: 100%; max-width: 280px; }
 
 #toasts { position: fixed; z-index: 20; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(68px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
 .toast { background: var(--board); color: var(--board-fg); border-left: 4px solid var(--board-lit); border-radius: var(--r-sm); padding: 10px 16px; box-shadow: var(--shadow); animation: rise .25s; }
@@ -227,6 +231,7 @@ footer { font-size: .85rem; color: var(--muted); border-top: 1px solid var(--lin
       <a href="#platforms" data-n="platforms">Platforms</a>
       <a href="#games" data-n="games">Games</a>
       <a href="#playbook" data-n="playbook">Playbook</a>
+      <a href="#leaderboard" data-n="leaderboard">Leaderboard</a>
     </nav>
     <div class="rank" id="rank"></div>
   </div>
@@ -794,12 +799,40 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const set = html => { view.innerHTML = html; };
 
-function blank() { return { xp: 0, lessons: {}, games: {}, badges: {}, seen: {} }; }
+function blank() { return { xp: 0, lessons: {}, games: {}, badges: {}, seen: {}, name: '', key: '' }; }
 function load() {
   try { return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { return blank(); }
 }
 let S = load();
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* progress lasts for this visit only */ } }
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* progress lasts for this visit only */ }
+  queueSync();
+}
+
+/* Shared leaderboard. The table is reachable only through three database
+   functions; the key below is the project's publishable key, which is meant
+   to ship in client code. Each browser makes its own secret player key. */
+const LB_URL = 'https://mqksikjcudxmoejpmijc.supabase.co/rest/v1/rpc/';
+const LB_KEY = 'sb_publishable_xV1U1tDghZyEeIZwJ_2uLw_6Hhst6as';
+function lb(fn, body) {
+  return fetch(LB_URL + fn, { method: 'POST', headers: { apikey: LB_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.status === 204 ? null : r.json(); });
+}
+function newKey() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
+}
+function pushScore() {
+  return lb('erpcrm_submit', { p_key: S.key, p_name: S.name, p_xp: S.xp,
+    p_innings: LESSONS.filter(L => S.lessons[L.id] && S.lessons[L.id].best != null).length,
+    p_badges: Object.keys(S.badges).length });
+}
+let syncTimer = null;
+function queueSync() {
+  if (!S.name || !S.key) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { pushScore().catch(() => { /* retried on the next change */ }); }, 1500);
+}
 
 function rankOf(xp) { let i = 0; RANKS.forEach((r, k) => { if (xp >= r[0]) i = k; }); return i; }
 function toast(big, small) {
@@ -897,6 +930,7 @@ function viewHome() {
       <div class="row">
         <a class="btn primary" href="#inning-${nextIdx < 0 ? 1 : nextIdx + 1}">${nextIdx < 0 ? 'Replay inning 1' : (started ? 'Continue with' : 'Start') + ' inning ' + (nextIdx + 1)}</a>
         <a class="btn" href="#games">Play a game</a>
+        ${S.name ? '' : '<a class="btn" href="#leaderboard">Join the leaderboard</a>'}
       </div>
     </div>
     <div class="board" aria-label="Your line score">
@@ -911,11 +945,11 @@ function viewHome() {
   <section class="stack"><h2>Badges</h2>
     <div class="badges">${BADGES.map(b => `<div class="badge ${S.badges[b[0]] ? 'on' : ''}"><b>${b[1]}</b>${b[2]}</div>`).join('')}</div>
   </section>
-  <footer class="row between"><span>Progress is saved in this browser only. Vendor dates and product names change, so check the vendor's site before quoting one to a client.</span>
+  <footer class="row between"><span>Progress is saved in this browser. Vendor dates and product names change, so check the vendor's site before quoting one to a client.</span>
     <button class="btn small" data-a="reset" id="reset">Reset my progress</button></footer>`);
   H = { reset(el) {
     if (!confirmReset) { confirmReset = true; el.textContent = 'Press again to erase everything'; return; }
-    S = blank(); save(); drawRank(); viewHome();
+    S = Object.assign(blank(), { name: S.name, key: S.key }); save(); drawRank(); viewHome();
   } };
 }
 
@@ -1216,6 +1250,61 @@ function viewPlaybook() {
   draw();
 }
 
+/* ───────── Leaderboard ───────── */
+function viewBoard() {
+  let rows = null, error = '', editing = !S.name, confirmLeave = false, note = '';
+  function table() {
+    if (error) return `<p class="why bad">${esc(error)}</p>`;
+    if (!rows) return '<p class="muted">Loading the standings…</p>';
+    if (!rows.length) return '<p class="muted">Nobody is on the board yet. Be the first.</p>';
+    return `<div class="scroll"><table class="ptable lb" style="border-collapse:collapse;width:100%;min-width:480px">
+      <tr><th></th><th>Player</th><th>Rank</th><th class="num">Innings</th><th class="num">Badges</th><th class="num">XP</th></tr>
+      ${rows.map((r, i) => `<tr class="${r.is_me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}${r.is_me ? ' (you)' : ''}</td><td>${RANKS[rankOf(r.xp)][1]}</td>
+        <td class="num">${r.innings} / ${LESSONS.length}</td><td class="num">${r.badges}</td><td class="num">${r.xp}</td></tr>`).join('')}</table></div>`;
+  }
+  function draw() {
+    set(`<section class="stage">${head('Standings', 'Leaderboard', 'Everyone who has joined, ranked by XP.')}
+      <div class="card stack">${editing ? `<form id="lbform" class="stack">
+          <label for="lbname"><strong>${S.name ? 'Change your name' : 'Join the leaderboard'}</strong><br><span class="muted">Your name, XP, innings and badge count are shown to everyone with the link. Up to 24 characters.</span></label>
+          <div class="row"><input type="text" id="lbname" maxlength="24" autocomplete="name" placeholder="First name and last initial" value="${esc(S.name)}">
+          <button class="btn primary" type="submit">${S.name ? 'Save' : 'Join'}</button>${S.name ? '<button class="btn" type="button" data-a="cancel">Cancel</button>' : ''}</div></form>`
+        : `<div class="row between"><span>Playing as <strong>${esc(S.name)}</strong>. Your score updates as you earn XP.</span>
+          <span class="row"><button class="btn small" data-a="rename">Change name</button><button class="btn small" data-a="leave">Leave the board</button></span></div>`}
+        ${note ? `<p class="muted">${esc(note)}</p>` : ''}</div>
+      <div class="card stack"><div class="row between"><h2>Standings</h2><button class="btn small" data-a="refresh">Refresh</button></div><div id="lbt">${table()}</div></div></section>`);
+    const f = $('#lbform');
+    if (f) f.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = $('#lbname').value.replace(/[<>]/g, '').trim().slice(0, 24);
+      if (!name) { note = 'Enter a name to join.'; draw(); return; }
+      S.name = name; if (!S.key) S.key = newKey();
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (err) { /* this visit only */ }
+      editing = false; note = '';
+      draw();
+      pushScore().then(fetchBoard, fail);
+    });
+  }
+  const fail = () => { error = 'The leaderboard could not be reached. Your progress is still saved in this browser. Check your connection and press Refresh.'; draw(); };
+  function fetchBoard() {
+    return lb('erpcrm_board', { p_key: S.key || null }).then(r => { rows = r || []; error = ''; draw(); }, fail);
+  }
+  H = {
+    refresh() { rows = null; error = ''; draw(); (S.name ? pushScore().catch(() => {}) : Promise.resolve()).then(fetchBoard); },
+    rename() { editing = true; draw(); $('#lbname').focus(); },
+    cancel() { editing = false; draw(); },
+    leave(el) {
+      if (!confirmLeave) { confirmLeave = true; el.textContent = 'Press again to remove your score'; return; }
+      const key = S.key;
+      clearTimeout(syncTimer);
+      S.name = ''; S.key = ''; save();
+      editing = true; confirmLeave = false; note = 'You are off the board. Your progress in this browser is untouched.';
+      lb('erpcrm_remove', { p_key: key }).then(fetchBoard, fail);
+    }
+  };
+  draw();
+  (S.name ? pushScore().catch(() => {}) : Promise.resolve()).then(fetchBoard);
+}
+
 /* ───────── Router ───────── */
 function route() {
   if (cleanup) { cleanup(); cleanup = null; }
@@ -1226,6 +1315,7 @@ function route() {
   else if (h === 'games') { nav = h; viewGames(); }
   else if ((m = h.match(/^play-(\w+)$/)) && GAMES[m[1]]) { nav = 'games'; GAMES[m[1]].play(); }
   else if (h === 'playbook') { nav = h; viewPlaybook(); }
+  else if (h === 'leaderboard') { nav = h; viewBoard(); }
   else viewHome();
   document.querySelectorAll('#nav a').forEach(a => { if (a.dataset.n === nav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   window.scrollTo(0, 0);

@@ -22,8 +22,25 @@ browser to run it, or serve the repository with GitHub Pages
 - **Playbook** — discovery questions with copy buttons, trigger events,
   objection responses, a phase-by-role table and a searchable glossary.
 
-XP, ranks (Rookie → MVP) and badges are kept in `localStorage` per browser;
-there is no shared leaderboard. Games pay XP only for beating a personal best.
+XP, ranks (Rookie → MVP) and badges are kept in `localStorage` per browser.
+Games pay XP only for beating a personal best.
+
+## Leaderboard
+
+The Leaderboard tab shows everyone who has joined, ranked by XP. A player
+joins by entering a display name; from then on their name, XP, innings
+finished and badge count are sent to a Supabase table after each change.
+
+- Table `public.erpcrm_leaderboard` in the BookFinder Supabase project. Row
+  level security is on with no policies, so the API roles cannot read or
+  write it directly.
+- The app calls three database functions: `erpcrm_submit`, `erpcrm_board` and
+  `erpcrm_remove`. Each browser generates a secret player key that identifies
+  its own row; keys are never returned to other players.
+- The project URL and publishable key in `index.html` are meant to be public.
+- Scores are reported by the browser and only range-checked by the database,
+  so a determined person could post a false score. There are no accounts: a
+  player who switches browser or clears site data starts a new entry.
 
 ## Editing the content
 
