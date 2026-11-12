@@ -18,7 +18,7 @@
   --accent: #416180; --accent-soft: #d6ebff; --accent-ink: #ffffff;
   --gold: #a96d10; --gold-soft: #fbefd6;
   --good: #2a7550; --good-soft: #dff3e8; --bad: #b03b34; --bad-soft: #fbe4e1;
-  --board: #1d2d3d; --board-fg: #eef6ff; --board-dim: #94bce3; --board-line: #416180; --board-lit: #f3c668;
+  --board: #1d2d3d; --board-fg: #eef6ff; --board-dim: #94bce3; --board-line: #416180; --board-lit: #f3c668; --silver: #c9d3dc; --bronze: #d59a6a;
   --shadow: 0 3px 10px rgba(43, 43, 45, .12);
   --font-head: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -195,9 +195,32 @@ input[type="search"] { font: inherit; padding: 9px 12px; border-radius: var(--r-
 dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); }
 dt, dd { margin: 0; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
 dt { font-weight: 700; }
-.lb td.num, .lb th.num { text-align: right; font-variant-numeric: tabular-nums; }
-.lb tr.me td { background: var(--gold-soft); font-weight: 700; }
-.lb td:first-child { width: 3ch; color: var(--muted); }
+.podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: end; margin-top: 16px; }
+.pod { --medal: var(--board-lit); text-align: center; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pod.p2 { --medal: var(--silver); } .pod.p3 { --medal: var(--bronze); }
+.pod .nm { font: 600 1.2rem/1.15 var(--font-head); overflow-wrap: anywhere; }
+.pod.me .nm { color: var(--board-lit); }
+.pod .rk { font: 500 .78rem var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--board-dim); }
+.pod .xp { font: 600 1.7rem/1.1 var(--font-head); color: var(--medal); font-variant-numeric: tabular-nums; }
+.pod .xp small { font-size: .55em; letter-spacing: .08em; }
+.pod .blk { margin-top: 8px; height: 64px; border-radius: 4px 4px 0 0; background: var(--board-line); border-top: 4px solid var(--medal); color: var(--medal); font: 600 2.2rem/1 var(--font-head); padding-top: 10px; transform-origin: bottom; animation: grow .6s cubic-bezier(.2, .8, .2, 1) both; }
+.pod.p1 .blk { height: 124px; animation-delay: .3s; } .pod.p2 .blk { height: 92px; animation-delay: .15s; }
+.pod.open { opacity: .45; }
+@keyframes grow { from { transform: scaleY(0); } }
+.lblist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.lbrow { display: grid; grid-template-columns: 2.4ch minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; padding: 12px 10px; border-bottom: 1px solid var(--line); border-radius: var(--r-sm); }
+.lbrow:last-child { border-bottom: 0; }
+.lbrow .pos { font: 600 1.5rem var(--font-head); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.lbrow .who { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.lbrow .who > span { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; overflow-wrap: anywhere; }
+.lbrow .xp { font: 600 1.5rem var(--font-head); font-variant-numeric: tabular-nums; }
+.lbrow small { color: var(--muted); }
+.lbrow.me { background: var(--gold-soft); border-bottom-color: transparent; }
+.lbrow.me .pos, .lbrow.me .xp { color: var(--gold); }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 3px; background: var(--accent); transform-origin: left; animation: fill .7s cubic-bezier(.2, .8, .2, 1) both; }
+.lbrow.me .bar i { background: var(--gold); }
+@keyframes fill { from { transform: scaleX(0); } }
 input[type="text"] { font: inherit; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--card); color: var(--text); width: 100%; max-width: 280px; }
 
 #toasts { position: fixed; z-index: 20; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(68px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
@@ -1253,14 +1276,36 @@ function viewPlaybook() {
 /* ───────── Leaderboard ───────── */
 function viewBoard() {
   let rows = null, error = '', editing = !S.name, confirmLeave = false, note = '';
+  const ord = n => n + (n % 100 > 10 && n % 100 < 14 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  function chase() {
+    const i = rows.findIndex(r => r.is_me);
+    if (i < 0) return '';
+    const me = rows[i];
+    let msg;
+    if (rows.length === 1) msg = 'You are the only one on the board so far. Send the link round.';
+    else if (i === 0) msg = me.xp > rows[1].xp ? `You lead the league by ${me.xp - rows[1].xp} XP. ${esc(rows[1].name)} is next.` : `You are level with ${esc(rows[1].name)} at the top. The next XP breaks the tie.`;
+    else msg = `${rows[i - 1].xp - me.xp + 1} more XP takes you past ${esc(rows[i - 1].name)} into ${ord(i)} place.`;
+    return `<div class="say"><b>You are ${ord(i + 1)} of ${rows.length}</b>${msg}</div>`;
+  }
+  function pod(r, n) {
+    if (!r) return `<div class="pod p${n} open"><span class="rk">Open spot</span><div class="blk">${n}</div></div>`;
+    return `<div class="pod p${n} ${r.is_me ? 'me' : ''}"><span class="nm">${esc(r.name)}${r.is_me ? ' (you)' : ''}</span>
+      <span class="rk">${RANKS[rankOf(r.xp)][1]} · ${r.innings}/${LESSONS.length} innings</span>
+      <span class="xp">${r.xp} <small>XP</small></span><div class="blk">${n}</div></div>`;
+  }
   function table() {
-    if (error) return `<p class="why bad">${esc(error)}</p>`;
-    if (!rows) return '<p class="muted">Loading the standings…</p>';
-    if (!rows.length) return '<p class="muted">Nobody is on the board yet. Be the first.</p>';
-    return `<div class="scroll"><table class="ptable lb" style="border-collapse:collapse;width:100%;min-width:480px">
-      <tr><th></th><th>Player</th><th>Rank</th><th class="num">Innings</th><th class="num">Badges</th><th class="num">XP</th></tr>
-      ${rows.map((r, i) => `<tr class="${r.is_me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}${r.is_me ? ' (you)' : ''}</td><td>${RANKS[rankOf(r.xp)][1]}</td>
-        <td class="num">${r.innings} / ${LESSONS.length}</td><td class="num">${r.badges}</td><td class="num">${r.xp}</td></tr>`).join('')}</table></div>`;
+    const has = rows && rows.length && !error;
+    const total = has ? rows.reduce((n, r) => n + r.xp, 0) : 0;
+    const top = has ? rows[0].xp || 1 : 1;
+    const rest = has ? rows.slice(3) : [];
+    return `<div class="board"><div class="row between"><span class="rk kicker" style="color:var(--board-dim)">League standings${has ? ` · ${rows.length} ${rows.length === 1 ? 'player' : 'players'} · ${total} XP earned` : ''}</span>
+        <button class="btn small" data-a="refresh">Refresh</button></div>
+      ${has ? `<div class="podium">${pod(rows[1], 2)}${pod(rows[0], 1)}${pod(rows[2], 3)}</div>` : ''}</div>
+      ${error ? `<p class="why bad">${esc(error)}</p>` : !rows ? '<p class="muted">Loading the standings…</p>' : !rows.length ? '<p class="card muted">Nobody is on the board yet. Be the first.</p>' : chase()}
+      ${rest.length ? `<div class="card"><ol class="lblist">${rest.map((r, i) => `<li class="lbrow ${r.is_me ? 'me' : ''}"><span class="pos">${i + 4}</span>
+        <div class="who"><span><strong>${esc(r.name)}${r.is_me ? ' (you)' : ''}</strong><span class="pill">${RANKS[rankOf(r.xp)][1]}</span><small>${r.innings} of ${LESSONS.length} innings · ${r.badges} ${r.badges === 1 ? 'badge' : 'badges'}</small></span>
+        <div class="bar"><i style="width:${Math.max(2, Math.round(r.xp / top * 100))}%;animation-delay:${Math.min(i, 12) * 50}ms"></i></div></div>
+        <b class="xp">${r.xp}</b></li>`).join('')}</ol></div>` : ''}`;
   }
   function draw() {
     set(`<section class="stage">${head('Standings', 'Leaderboard', 'Everyone who has joined, ranked by XP.')}
@@ -1271,7 +1316,7 @@ function viewBoard() {
         : `<div class="row between"><span>Playing as <strong>${esc(S.name)}</strong>. Your score updates as you earn XP.</span>
           <span class="row"><button class="btn small" data-a="rename">Change name</button><button class="btn small" data-a="leave">Leave the board</button></span></div>`}
         ${note ? `<p class="muted">${esc(note)}</p>` : ''}</div>
-      <div class="card stack"><div class="row between"><h2>Standings</h2><button class="btn small" data-a="refresh">Refresh</button></div><div id="lbt">${table()}</div></div></section>`);
+      ${table()}</section>`);
     const f = $('#lbform');
     if (f) f.addEventListener('submit', e => {
       e.preventDefault();
